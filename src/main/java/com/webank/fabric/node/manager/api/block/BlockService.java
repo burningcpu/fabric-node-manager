@@ -1,15 +1,15 @@
 package com.webank.fabric.node.manager.api.block;
 
 import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.webank.fabric.node.manager.accessory.scheduler.ScheduleProperties;
 import com.webank.fabric.node.manager.api.front.FrontRestManager;
 import com.webank.fabric.node.manager.api.transaction.TransactionService;
 import com.webank.fabric.node.manager.common.enums.TableName;
 import com.webank.fabric.node.manager.common.exception.NodeMgrException;
+import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
 import com.webank.fabric.node.manager.common.pojo.block.BlockInfoDO;
+import com.webank.fabric.node.manager.common.pojo.block.BlockListParam;
 import lombok.extern.log4j.Log4j2;
 import org.hyperledger.fabric.sdk.BlockInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
@@ -96,7 +97,7 @@ public class BlockService {
      */
     private BigInteger getNextBlockNumber(int channelId) {
         //get max blockNumber in table
-        BigInteger localMaxBlockNumber = getLatestBlockNumber(channelId);
+        BigInteger localMaxBlockNumber = getLatestBlockNumberFromDB(channelId);
         if (Objects.nonNull(localMaxBlockNumber)) {
             return localMaxBlockNumber.add(BigInteger.ONE);
         }
@@ -126,9 +127,8 @@ public class BlockService {
         addBlockInfo(blockInfoDO, channelId);
 
         for (BlockInfo.EnvelopeInfo envelopeInfo : blockInfo.getEnvelopeInfos()) {
-            // save transaction
-            transactionService.saveTransaction(envelopeInfo, blockInfoDO.getBlockNumber());
 
+            transactionService.saveTransInfo(channelId, blockInfoDO.getBlockNumber(), envelopeInfo);
             try {
                 Thread.sleep(SAVE_TRANS_SLEEP_TIME);
             } catch (InterruptedException ex) {
@@ -150,7 +150,6 @@ public class BlockService {
         BigInteger blockNumber = BigInteger.valueOf(blockInfo.getBlockNumber());
         int transCount = blockInfo.getTransactionCount();
 
-
         // to BlockInfoDO
         BlockInfoDO blockInfoDO = BlockInfoDO.builder()
                 .pkHash(hash)
@@ -170,7 +169,7 @@ public class BlockService {
         log.debug("start addBlockInfo blockInfoDO:{}", JSON.toJSONString(blockInfoDO));
         String tableName = TableName.BLOCK.getTableName(channelId);
         //check newBLock == dbMaxBLock +1
-        BigInteger dbMaxBLock = getLatestBlockNumber(channelId);
+        BigInteger dbMaxBLock = getLatestBlockNumberFromDB(channelId);
         BigInteger pullBlockNumber = blockInfoDO.getBlockNumber();
         if (dbMaxBLock != null && !(pullBlockNumber.compareTo(dbMaxBLock.add(numberOne)) == 0)) {
             log.info("fail addBlockInfo.  dbMaxBLock:{} pullBlockNumber:{}", dbMaxBLock,
@@ -179,82 +178,85 @@ public class BlockService {
         }
 
         // save block info
-        QueryWrapper<BlockInfoDO> wrapper = Wrappers.query();
-        wrapper.eq("channel_id", channelId).eq("block_number", pullBlockNumber);
-
-        blockmapper.saveOrUpdate(blockInfoDO, wrapper);
+        blockmapper.add(tableName, blockInfoDO);
     }
 
     /**
      * query block info list.
      */
-//    public List<BlockInfoDO> queryBlockList(int channelId, BlockListParam queryParam)
-//            throws NodeMgrException {
-//        log.debug("start queryBlockList channelId:{},queryParam:{}", channelId,
-//                JSON.toJSONString(queryParam));
-//
-//        List<BlockInfoDO> listOfBlock = blockmapper
-//                .getList(TableName.BLOCK.getTableName(channelId), queryParam);
-//        //check sealer
-//        listOfBlock.stream().forEach(block -> checkSearlerOfBlock(channelId, block));
-//
-//        log.debug("end queryBlockList listOfBlockSize:{}", listOfBlock.size());
-//        return listOfBlock;
-//    }
+    public List<BlockInfoDO> queryBlockList(int channelId, BlockListParam queryParam)
+            throws NodeMgrException {
+        log.debug("start queryBlockList channelId:{},queryParam:{}", channelId,
+                JSON.toJSONString(queryParam));
+
+        List<BlockInfoDO> listOfBlock = blockmapper
+                .getList(TableName.BLOCK.getTableName(channelId), queryParam);
+
+        log.debug("end queryBlockList listOfBlockSize:{}", listOfBlock.size());
+        return listOfBlock;
+    }
 
     /**
      * query count of block.
      */
-//    public int queryCountOfBlock(Integer channelId, String pkHash, BigInteger blockNumber)
-//            throws NodeMgrException {
-//        log.debug("start countOfBlock channelId:{} pkHash:{} blockNumber:{}", channelId, pkHash,
-//                blockNumber);
-//        try {
-//            int count = blockmapper
-//                    .getCount(TableName.BLOCK.getTableName(channelId), pkHash, blockNumber);
-//            log.info("end countOfBlock channelId:{} pkHash:{} count:{}", channelId, pkHash, count);
-//            return count;
-//        } catch (RuntimeException ex) {
-//            log.error("fail countOfBlock channelId:{} pkHash:{}", channelId, pkHash, ex);
-//            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
-//        }
-//    }
+    public int queryCountOfBlock(Integer channelId, String pkHash, BigInteger blockNumber)
+            throws NodeMgrException {
+        log.debug("start countOfBlock channelId:{} pkHash:{} blockNumber:{}", channelId, pkHash,
+                blockNumber);
+        try {
+            int count = blockmapper
+                    .getCount(TableName.BLOCK.getTableName(channelId), pkHash, blockNumber);
+            log.info("end countOfBlock channelId:{} pkHash:{} count:{}", channelId, pkHash, count);
+            return count;
+        } catch (RuntimeException ex) {
+            log.error("fail countOfBlock channelId:{} pkHash:{}", channelId, pkHash, ex);
+            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+        }
+    }
 
-
-//    /**
-//     * remove block into.
-//     */
-//    public Integer remove(Integer channelId, BigInteger blockRetainMax)
-//            throws NodeMgrException {
-//        String tableName = TableName.BLOCK.getTableName(channelId);
-//        QueryWrapper<BlockInfoDO> wrapper = Wrappers.query();
-//        wrapper.
-//        Integer affectRow = blockmapper.remove(tableName, blockRetainMax);
-//        return affectRow;
-//    }
 
     /**
-     * get latest block number
+     * remove block into.
      */
-    public BigInteger getLatestBlockNumber(int channelId) {
-        //TableName.BLOCK.getTableName(channelId)
-        QueryWrapper<BlockInfoDO> wrapper = Wrappers.query();
-        wrapper.select("max(block_number) as blockNumber");
-        return blockmapper.selectOne(wrapper).getBlockNumber();
+    public Integer remove(Integer channelId, BigInteger blockRetainMax)
+            throws NodeMgrException {
+        String tableName = TableName.BLOCK.getTableName(channelId);
+        Integer affectRow = blockmapper.remove(tableName, blockRetainMax);
+        return affectRow;
+    }
+
+    /**
+     * get latest block number.
+     */
+    public BigInteger getLatestBlockNumberFromDB(int channelId) {
+        return blockmapper.getLatestBlockNumber(TableName.BLOCK.getTableName(channelId));
     }
 
     /**
      * get block by block from front server
      */
     public BlockInfo getBlockFromFrontByNumber(int channelId, BigInteger blockNumber) throws InvalidProtocolBufferException {
-        return frontRestManager.getBlockInfo(channelId, blockNumber, null);
+        return frontRestManager.getBlockByNumber(channelId, blockNumber);
     }
 
     /**
      * get block by block from front server
      */
     public BlockInfo getblockFromFrontByHash(int channelId, String pkHash) throws InvalidProtocolBufferException {
-        return frontRestManager.getBlockInfo(channelId, null, pkHash);
+        return frontRestManager.getBlockByHash(channelId, pkHash);
+    }
+
+    public int queryCountOfBlockByMinus(Integer groupId) {
+        log.debug("start queryCountOfBlockByMinus groupId:{}", groupId);
+        try {
+            int count = blockmapper
+                    .getBlockCountByMinMax(TableName.BLOCK.getTableName(groupId));
+            log.info("end queryCountOfBlockByMinus groupId:{} count:{}", groupId, count);
+            return count;
+        } catch (RuntimeException ex) {
+            log.error("fail queryCountOfBlockByMinus groupId:{},exception:{}", groupId, ex);
+            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+        }
     }
 
 }

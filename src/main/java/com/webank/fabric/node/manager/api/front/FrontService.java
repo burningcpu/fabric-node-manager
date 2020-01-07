@@ -5,10 +5,10 @@ import com.webank.fabric.node.manager.api.channel.ChannelService;
 import com.webank.fabric.node.manager.api.channel.FrontChannelService;
 import com.webank.fabric.node.manager.api.peer.PeerService;
 import com.webank.fabric.node.manager.common.exception.NodeMgrException;
+import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
 import com.webank.fabric.node.manager.common.pojo.channel.ChannelDO;
 import com.webank.fabric.node.manager.common.pojo.front.FrontDO;
 import com.webank.fabric.node.manager.common.pojo.front.ReqFrontVO;
-import com.webank.fabric.node.manager.common.pojo.response.ConstantCode;
 import com.webank.fabric.node.manager.common.utils.NodeMgrUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.hyperledger.fabric.sdk.Peer;
@@ -56,7 +56,7 @@ public class FrontService {
         }
 
 
-        long peerCount  = peers.stream().filter(p -> p.getName().contains(":")).count();
+        long peerCount = peers.stream().filter(p -> p.getName().contains(":")).count();
         //save channel
         ChannelDO channelDO = channelService.saveChannel(channel, peerCount);
         frontChannelService.newFrontChannel(frontDo.getFrontId(), channelDO.getChannelId());
@@ -64,9 +64,8 @@ public class FrontService {
         //save peers
         for (Peer peer : peers) {
             BigInteger blockHeight = frontRestManager.getBlockHeightFromSpecificFront(frontIp, frontPort, peer.getUrl());
-            peerService.saveChannel(peer.getName(), channelDO.getChannelId(), peer.getUrl(), blockHeight);
+            peerService.addPeerInfo(peer.getName(), channelDO.getChannelId(), peer.getUrl(), blockHeight);
         }
-
 
 
         //clear catch

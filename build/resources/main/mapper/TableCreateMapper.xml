@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.webank.fabric.node.manager.accessory.tablecreate.TableCreateMapper">
+
+  <select id="queryTables" resultType="java.lang.String">
+    select table_name from information_schema.tables where table_schema=#{dbName}
+    <if test="tableName != null">
+      and table_name = #{tableName}
+    </if>
+  </select>
+
+  <update id="dropTable" parameterType="java.lang.String">
+      drop table if exists ${tableName}
+  </update>
+
+  <update id="createTbBlock" parameterType="java.lang.String">
+      CREATE TABLE IF NOT EXISTS ${tableName}(
+      pk_hash varchar(128) NOT NULL COMMENT '块hash值（由块hash转成的字符串）',
+      block_number bigint(20) NOT NULL COMMENT '快高',
+      trans_count bigint(20) DEFAULT '0' COMMENT '块包含的交易数',
+      create_time datetime DEFAULT NULL COMMENT '创建时间',
+      modify_time datetime DEFAULT NULL COMMENT '修改时间',
+      PRIMARY KEY (pk_hash),
+      KEY index_number (block_number)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='区块信息表';
+  </update>
+
+  <update id="createTransHash" parameterType="java.lang.String">
+      CREATE TABLE IF NOT EXISTS ${tableName} (
+      trans_id varchar(128) NOT NULL COMMENT 'txId',
+      block_number bigint(25) NOT NULL COMMENT '所属区块',
+      creator varchar(60) DEFAULT NULL COMMENT 'creator(截取实际内容的前60位)',
+      action_count int(11) DEFAULT NULL COMMENT '事件数（即：transactionActionInfo）',
+      trans_timestamp datetime NOT NULL COMMENT '交易发生时间',
+      envelope_type varchar(25) NOT NULL COMMENT '交易类型（TRANSACTION_ENVELOPE,ENVELOPE）',
+      create_time datetime DEFAULT NULL COMMENT '创建时间',
+      modify_time datetime DEFAULT NULL COMMENT '修改时间',
+      PRIMARY KEY (trans_hash),
+      KEY index_flag (statistics_flag)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='交易信息表';
+  </update>
+
+  <delete id="deleteByTableName" parameterType="java.lang.String">
+        delete from ${tableName} limit 1000
+  </delete>
+
+</mapper>

@@ -5,8 +5,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.webank.fabric.node.manager.api.channel.FrontChannelService;
 import com.webank.fabric.node.manager.common.exception.NodeMgrException;
+import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
 import com.webank.fabric.node.manager.common.pojo.channel.FrontChannelUnionDO;
-import com.webank.fabric.node.manager.common.pojo.response.ConstantCode;
+import com.webank.fabric.node.manager.common.pojo.front.FrontProperties;
 import com.webank.fabric.node.manager.common.utils.BeanUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -33,7 +34,8 @@ public class FrontRestManager {
     public static final String URI_GET_CHANNEL_NAME = "sdk/channelName";
     public static final String URI_GET_PEER_LIST = "sdk/listPeers";
     public static final String URI_GET_BLOCK_HEIGHT = "sdk/currentBlockHeight?peerAddress=%1s";
-    public static final String URI_GET_BLOCK_INFO = "sdk/blockInfo?blockHeight=%1d&blockHash=%2s";
+    public static final String URI_BLOCK_BY_NUMBER = "sdk/queryBlockByNumber/%1d";
+    public static final String URI_BLOCK_BY_HASH = "sdk/queryBlockByHash/%1s";
     @Autowired
     private RestTemplate restTemplate;
     @Autowired
@@ -84,17 +86,37 @@ public class FrontRestManager {
     /**
      * get transaction.
      */
-    public BlockInfo getBlockInfo(int channelId, BigInteger blockNumber, String blockHash) throws InvalidProtocolBufferException {
-        log.debug("start getBlockInfo. channelId:{} blockNumber:{} blockHash:{}", channelId, blockNumber, blockHash);
-        String uri = String.format(URI_GET_BLOCK_INFO, blockNumber, blockHash);
+    public BlockInfo getBlockByNumber(int channelId, BigInteger blockNumber) throws InvalidProtocolBufferException {
+        log.debug("start getBlockByNumber. channelId:{} blockNumber:{} ", channelId, blockNumber);
+        String uri = String.format(URI_BLOCK_BY_NUMBER, blockNumber);
         byte[] blockByteArray = getForEntity(channelId, uri, byte[].class);
+        BlockInfo blockInfo = blockInfoFromByteArray(blockByteArray);
+        log.debug("end getBlockByNumber.");
+        return blockInfo;
+    }
+
+
+    /**
+     * get transaction.
+     */
+    public BlockInfo getBlockByHash(int channelId, String blockHash) throws InvalidProtocolBufferException {
+        log.debug("start getBlockByHash. channelId:{}  blockHash:{}", channelId, blockHash);
+        String uri = String.format(URI_BLOCK_BY_HASH, blockHash);
+        byte[] blockByteArray = getForEntity(channelId, uri, byte[].class);
+        BlockInfo blockInfo = blockInfoFromByteArray(blockByteArray);
+        log.debug("end getBlockByHash.");
+        return blockInfo;
+    }
+
+    /**
+     * convert byteArray to blockInfo.
+     */
+    private BlockInfo blockInfoFromByteArray(byte[] blockByteArray) throws InvalidProtocolBufferException {
         if (null == blockByteArray)
             return null;
 
         Common.Block block = Common.Block.parseFrom(blockByteArray);
-        BlockInfo blockInfo = BeanUtils.getInstanceByReflection(BlockInfo.class, Arrays.asList(block));
-        log.debug("end getBlockInfo.");
-        return blockInfo;
+        return BeanUtils.getInstanceByReflection(BlockInfo.class, Arrays.asList(block));
     }
 
 

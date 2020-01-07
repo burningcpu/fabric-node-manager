@@ -1,8 +1,8 @@
 package com.webank.fabric.node.manager.common.config;
 
 import com.alibaba.fastjson.JSON;
-import com.webank.fabric.node.manager.common.pojo.response.BaseResponse;
-import com.webank.fabric.node.manager.common.pojo.response.ConstantCode;
+import com.webank.fabric.node.manager.common.pojo.base.BaseResponse;
+import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
@@ -33,7 +33,7 @@ public class ResultConfig {
             }
 
             BaseResponse result = new BaseResponse(ConstantCode.SUCCESS, body);
-            if(body instanceof String) {
+            if (body instanceof String) {
                 return JSON.toJSONString(result);
             }
 

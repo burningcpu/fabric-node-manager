@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--对应mapper接口 -->
+<mapper namespace="com.webank.fabric.node.manager.api.transaction.TransactionMapper">
+    <resultMap id="transHashMap" type="com.webank.fabric.node.manager.common.pojo.transaction.TransactionDO">
+        <id column="txId" javaType="java.lang.String" jdbcType="VARCHAR" property="txId"/>
+        <result column="creator" javaType="java.lang.String" jdbcType="VARCHAR" property="creator"/>
+        <result column="action_count" javaType="java.lang.Integer" jdbcType="INTEGER" property="actionCount"/>
+        <result column="block_number" javaType="java.math.BigInteger" jdbcType="INTEGER" property="blockNumber"/>
+        <result column="envelope_type" javaType="java.lang.String" jdbcType="VARCHAR" property="envelopeType"/>
+        <result column="trans_timestamp" javaType="java.time.LocalDateTime" jdbcType="TIMESTAMP"
+                property="transTimestamp"/>
+        <result column="create_time" javaType="java.time.LocalDateTime" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="modify_time" javaType="java.time.LocalDateTime" jdbcType="TIMESTAMP" property="modifyTime"/>
+    </resultMap>
+
+
+    <insert id="add">
+        insert ignore into
+        ${tableName}(txId,block_number,creator,action_count,trans_timestamp,envelope_type,create_time,modify_time)
+        values(#{trans.txId},#{trans.blockNumber},#{trans.creator},#{trans.actionCount},#{trans.transTimestamp},#{trans.envelopeType},NOW(),NOW())
+    </insert>
+
+
+    <select id="getCount" parameterType="com.webank.fabric.node.manager.common.pojo.transaction.TransListParam"
+            resultType="java.lang.Integer">
+        select count(txId) from ${tableName} where 1=1
+        <if test="param.transHash != null and param.transHash != ''">
+            and txId = #{param.txId}
+        </if>
+        <if test="param.blockNumber != null">
+            and block_number = #{param.blockNumber}
+        </if>
+    </select>
+
+    <select id="getCountByMinMax" resultType="java.lang.Integer">
+        select max(trans_number) - min(trans_number) from ${tableName}
+    </select>
+
+    <select id="getList" parameterType="com.webank.fabric.node.manager.common.pojo.transaction.TransListParam"
+            resultMap="transHashMap">
+        select * from ${tableName} where 1=1
+        <if test="param.txId != null and param.txId != ''">
+            and txId = #{param.txId}
+        </if>
+        <if test="param.blockNumber != null">
+            and block_number = #{param.blockNumber}
+        </if>
+        <if test="param.flagSortedByBlock != null and param.flagSortedByBlock != ''">
+            order by block_number ${param.flagSortedByBlock}
+        </if>
+        <if test="param.start != null and param.pageSize != null">
+            limit #{param.start},#{param.pageSize}
+        </if>
+    </select>
+
+
+    <select id="queryMinMaxBlock" resultType="com.webank.fabric.node.manager.common.pojo.transaction.MinMaxBlock">
+        select max(block_number) as maxBlockNumber,min(block_number) as minBLockNumber
+        from ${tableName}
+    </select>
+
+    <delete id="remove">
+        DELETE from ${tableName}
+        where  block_number &lt;= (select max(block_number) blockNumber from tb_trans_daily where channel_id = #{channelId})
+        order by block_number
+        limit ${subTransNum}
+    </delete>
+
+</mapper>

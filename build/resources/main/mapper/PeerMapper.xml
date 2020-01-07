@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--对应mapper接口 -->
+<mapper namespace="com.webank.fabric.node.manager.api.peer.PeerMapper">
+    <resultMap id="peerMap" type="com.webank.fabric.node.manager.common.pojo.peer.PeerDO">
+        <id column="peer_id" javaType="java.lang.String" jdbcType="VARCHAR" property="peerId"/>
+        <id column="channel_id" javaType="java.lang.Integer" jdbcType="INTEGER" property="channelId"/>
+        <result column="peer_name" javaType="java.lang.String" jdbcType="VARCHAR" property="peerName"/>
+        <result column="peer_address" javaType="java.lang.String" jdbcType="VARCHAR" property="peerAddress"/>
+        <result column="block_number" javaType="java.math.BigInteger" jdbcType="INTEGER"
+                property="blockNumber"/>
+        <result column="description" javaType="java.lang.String" jdbcType="VARCHAR"
+                property="description"/>
+        <result column="create_time" javaType="java.time.LocalDateTime" jdbcType="TIMESTAMP"
+                property="createTime"/>
+        <result column="modify_time" javaType="java.time.LocalDateTime" jdbcType="TIMESTAMP"
+                property="modifyTime"/>
+    </resultMap>
+
+
+    <sql id="ALL_SELECT_COLUMN">
+        peer_id,channel_id,peer_name,peer_address,block_number,description,create_time,modify_time
+    </sql>
+
+    <insert id="add" parameterType="com.webank.fabric.node.manager.common.pojo.peer.PeerDO">
+        insert ignore into tb_peer
+        (peer_name,channel_id,peer_name,peer_address,description,block_number,create_time,modify_time)
+        values(#{peerName},#{channelId},#{peerName},#{peerAddress},#{description},NOW(),NOW())
+    </insert>
+
+
+    <select id="getCount" parameterType="com.webank.fabric.node.manager.common.pojo.peer.PeerParam"
+            resultType="java.lang.Integer">
+        select count(1) from tb_peer where 1=1
+        <if test="channelId != null and channelId != ''">
+            and channel_id = #{channelId}
+        </if>
+        <if test="peerId != null and peerId != ''">
+            and peer_id = #{peerId}
+        </if>
+        <if test="peerAddress != null and peerAddress != ''">
+            and peer_address = #{peerAddress}
+        </if>
+        <if test="peerName != null and peerName != ''">
+            and peer_name = #{peerName}
+        </if>
+    </select>
+
+    <select id="getList" parameterType="com.webank.fabric.node.manager.common.pojo.peer.PeerParam"
+            resultMap="peerMap">
+        select a.* from tb_peer a where 1=1
+        <if test="channelId != null and channelId != ''">
+            and channel_id = #{channelId}
+        </if>
+        <if test="peerId != null and peerId != ''">
+            and peer_id = #{peerId}
+        </if>
+        <if test="peerAddress != null and peerAddress != ''">
+            and peer_address = #{peerAddress}
+        </if>
+        <if test="peerName != null and peerName != ''">
+            and peer_name = #{peerName}
+        </if>
+        <if test="flagSortedByTime != null and flagSortedByTime != ''">
+            order by a.modify_time ${flagSortedByTime}
+        </if>
+        <if test="start != null and pageSize != null">
+            limit #{start},#{pageSize}
+        </if>
+    </select>
+
+
+    <select id="queryByPeerId" resultMap="peerMap">
+        select * from tb_peer where peer_id = #{peerId}
+    </select>
+
+    <update id="update" parameterType="com.webank.fabric.node.manager.common.pojo.peer.PeerDO">
+        update tb_peer set modify_time=NOW()
+        <if test="blockNumber != null">
+            ,block_number = #{blockNumber}
+        </if>
+        <if test="description != null">
+            ,description = #{description}
+        </if>
+        where peer_id=#{peerId} and channel_id=#{channelId}
+    </update>
+
+    <select id="queryPeerInfo" parameterType="com.webank.fabric.node.manager.common.pojo.peer.PeerParam"
+            resultMap="peerMap">
+        select * from tb_peer where 1=1
+        <if test="channelId != null and channelId != ''">
+            and channel_id = #{channelId}
+        </if>
+        <if test="peerId != null and peerId != ''">
+            and peer_id = #{peerId}
+        </if>
+        <if test="peerAddress != null and peerAddress != ''">
+            and peer_address = #{peerAddress}
+        </if>
+        <if test="peerName != null and peerName != ''">
+            and peer_name = #{peerName}
+        </if>
+        limit 1
+    </select>
+
+    <delete id="deleteByPeerAndChannel">
+        delete from tb_peer where peer_id=#{peerId} and channel_id = #{channelId}
+    </delete>
+
+    <delete id="deleteByChannelId">
+        delete from tb_peer where channel_id = #{channelId}
+    </delete>
+</mapper>

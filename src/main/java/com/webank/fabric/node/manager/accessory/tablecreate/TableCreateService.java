@@ -15,7 +15,7 @@ package com.webank.fabric.node.manager.accessory.tablecreate;
 
 import com.webank.fabric.node.manager.common.enums.TableName;
 import com.webank.fabric.node.manager.common.exception.NodeMgrException;
-import com.webank.fabric.node.manager.common.pojo.response.ConstantCode;
+import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;

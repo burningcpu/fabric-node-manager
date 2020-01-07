@@ -14,9 +14,9 @@
 package com.webank.fabric.node.manager.common.exception;
 
 import com.alibaba.fastjson.JSON;
-import com.webank.fabric.node.manager.common.pojo.response.BaseResponse;
-import com.webank.fabric.node.manager.common.pojo.response.CodeAndMsg;
-import com.webank.fabric.node.manager.common.pojo.response.ConstantCode;
+import com.webank.fabric.node.manager.common.pojo.base.BaseResponse;
+import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
+import com.webank.fabric.node.manager.common.pojo.base.RetCode;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.TypeMismatchException;
@@ -47,10 +47,10 @@ public class ExceptionsHandler {
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public BaseResponse myExceptionHandler(NodeMgrException nodeMgrException) {
         log.warn("catch business exception", nodeMgrException);
-        CodeAndMsg codeAndMsg = Optional.ofNullable(nodeMgrException).map(NodeMgrException::getCodeAndMsg)
+        RetCode RetCode = Optional.ofNullable(nodeMgrException).map(NodeMgrException::getCodeAndMsg)
                 .orElse(ConstantCode.SYSTEM_EXCEPTION);
 
-        BaseResponse bre = new BaseResponse(codeAndMsg);
+        BaseResponse bre = new BaseResponse(RetCode);
         log.warn("business exception return:{}", JSON.toJSONString(bre));
         return bre;
     }
@@ -67,8 +67,8 @@ public class ExceptionsHandler {
                 .collect(Collectors.joining(","));
         StringUtils.removeEnd(errFieldStr, ",");
         String message = "these fields can not be match:" + errFieldStr;
-        CodeAndMsg codeAndMsg = new CodeAndMsg(ConstantCode.PARAM_EXCEPTION.getCode(), message);
-        BaseResponse bre = new BaseResponse(codeAndMsg);
+        RetCode RetCode = new RetCode(ConstantCode.PARAM_EXCEPTION.getCode(), message);
+        BaseResponse bre = new BaseResponse(RetCode);
         return bre;
 
     }
@@ -82,8 +82,8 @@ public class ExceptionsHandler {
     public BaseResponse typeMismatchExceptionHandler(TypeMismatchException ex) {
         log.warn("catch typeMismatchException", ex);
 
-        CodeAndMsg codeAndMsg = new CodeAndMsg(ConstantCode.PARAM_EXCEPTION.getCode(), ex.getMessage());
-        BaseResponse bre = new BaseResponse(codeAndMsg);
+        RetCode RetCode = new RetCode(ConstantCode.PARAM_EXCEPTION.getCode(), ex.getMessage());
+        BaseResponse bre = new BaseResponse(RetCode);
         log.warn("typeMismatchException return:{}", JSON.toJSONString(bre));
         return bre;
     }
@@ -98,9 +98,9 @@ public class ExceptionsHandler {
     public BaseResponse exceptionHandler(RuntimeException exc) {
         log.warn("catch RuntimeException", exc);
         // 默认系统异常
-        CodeAndMsg codeAndMsg = ConstantCode.SYSTEM_EXCEPTION;
+        RetCode RetCode = ConstantCode.SYSTEM_EXCEPTION;
 
-        BaseResponse bre = new BaseResponse(codeAndMsg);
+        BaseResponse bre = new BaseResponse(RetCode);
         log.warn("system RuntimeException return:{}", JSON.toJSONString(bre));
         return bre;
     }

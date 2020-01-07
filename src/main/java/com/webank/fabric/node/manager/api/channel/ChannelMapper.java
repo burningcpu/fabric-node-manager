@@ -1,8 +1,8 @@
 package com.webank.fabric.node.manager.api.channel;
 
-import com.webank.fabric.node.manager.accessory.scheduler.StatisticalChannelTransInfo;
 import com.webank.fabric.node.manager.common.pojo.channel.ChannelDO;
 import com.webank.fabric.node.manager.common.pojo.channel.ChannelGeneral;
+import com.webank.fabric.node.manager.common.pojo.channel.StatisticalChannelTransInfo;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 

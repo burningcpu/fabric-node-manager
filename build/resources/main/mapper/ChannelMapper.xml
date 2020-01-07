@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--对应mapper接口 -->
+<mapper namespace="com.webank.fabric.node.manager.api.channel.ChannelMapper">
+    <resultMap id="channelMap" type="com.webank.fabric.node.manager.common.pojo.channel.ChannelDO">
+        <id column="channel_id" javaType="java.lang.Integer" jdbcType="INTEGER" property="channelId"/>
+        <result column="channel_name" javaType="java.lang.String" jdbcType="VARCHAR"
+                property="channelName"/>
+        <result column="channel_status" javaType="java.lang.Integer" jdbcType="INTEGER"
+                property="channelStatus"/>
+        <result column="peer_count" javaType="java.lang.Integer" jdbcType="INTEGER"
+                property="peerCount"/>
+        <result column="create_time" javaType="java.time.LocalDateTime" jdbcType="TIMESTAMP"
+                property="createTime"/>
+        <result column="modify_time" javaType="java.time.LocalDateTime" jdbcType="TIMESTAMP"
+                property="modifyTime"/>
+    </resultMap>
+
+
+    <resultMap id="statisticalTransMap"
+               type="com.webank.fabric.node.manager.common.pojo.channel.StatisticalChannelTransInfo">
+        <result column="channel_id" javaType="java.lang.Integer" jdbcType="INTEGER"
+                property="channelId"/>
+        <result column="maxDay" javaType="java.time.LocalDate" jdbcType="TIMESTAMP" property="maxDay"/>
+        <result column="block_number" javaType="java.math.BigInteger" jdbcType="INTEGER"
+                property="blockNumber"/>
+        <result column="trans_count" javaType="java.math.BigInteger" jdbcType="INTEGER"
+                property="transCount"/>
+    </resultMap>
+
+
+    <insert id="save" parameterType="com.webank.fabric.node.manager.common.pojo.channel.ChannelDO">
+        insert ignore into tb_channel (channel_name,peer_count,create_time,modify_time)
+        values(#{channelName},#{peerCount},NOW(),NOW())
+        <selectKey keyProperty="channelId" order="AFTER" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+    </insert>
+
+    <delete id="remove" parameterType="java.lang.Integer">
+        delete from tb_channel where channel_id=#{channelId}
+    </delete>
+
+    <update id="updateStatus">
+        update tb_channel set channel_status=#{channelStatus},modify_time=NOW() where channel_id=#{channelId}
+    </update>
+
+    <select id="getCount" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        select count(1) from tb_channel where 1 = 1
+        <if test="channelId != null and channelId !=''">
+            and channel_id = #{channelId}
+        </if>
+        <if test="channelStatus != null and channelStatus !=''">
+            and channel_status = #{channelStatus}
+        </if>
+    </select>
+
+    <select id="getList" resultMap="channelMap">
+        select * from tb_channel where 1=1
+        <if test="channelStatus != null and channelStatus !=''">
+            and channel_status = #{channelStatus}
+        </if>
+        order by channel_id asc
+    </select>
+
+
+    <select id="queryLatestStatisticalTrans" resultMap="statisticalTransMap">
+        select a.channel_id,b.maxDay,c.block_number,c.trans_count from tb_channel a
+        LEFT JOIN
+        (select channel_id,max(trans_day) as maxDay from tb_trans_daily GROUP BY channel_id)b
+        on (a.channel_id = b.channel_id)
+        LEFT JOIN
+        tb_trans_daily c on(b.channel_id = c.channel_id and b.maxDay = c.trans_day)
+    </select>
+
+    <select id="getGeneral" resultType="com.webank.fabric.node.manager.common.pojo.channel.ChannelGeneral">
+        SELECT a.channel_id channelId,a.peer_count peerCount,b.transactionCount,b.latestBlock
+        FROM tb_channel a
+        LEFT JOIN (select channel_id,sum(trans_count),block_number latestBlock transactionCount order by block_number
+        group by channel_id)b
+        on a.channel_id=b.channel_id
+        where a.channel_id = #{channelId}
+    </select>
+</mapper>

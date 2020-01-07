@@ -3,11 +3,9 @@ package com.webank.fabric.node.manager.api.channel;
  * service of front.
  */
 
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.webank.fabric.node.manager.common.pojo.channel.FrontChannelDO;
 import com.webank.fabric.node.manager.common.pojo.channel.FrontChannelUnionDO;
-import com.webank.fabric.node.manager.common.pojo.peer.PeerDO;
+import com.webank.fabric.node.manager.common.pojo.channel.MapListParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -31,9 +29,7 @@ public class FrontChannelService {
      */
     public FrontChannelDO newFrontChannel(int frontId, int channelId) {
         FrontChannelDO frontChannelDO = FrontChannelDO.builder().frontId(frontId).channelId(channelId).build();
-        UpdateWrapper<FrontChannelDO> wrapper = Wrappers.update();
-        wrapper.eq("front_id", frontId).eq("channel_id", channelId);
-        frontChannelMapper.saveOrUpdate(frontChannelDO, wrapper);
+        frontChannelMapper.add(frontChannelDO);
         return frontChannelDO;
     }
 
@@ -48,7 +44,7 @@ public class FrontChannelService {
      * reset mapList.
      */
     public List<FrontChannelUnionDO> resetMapList() {
-        mapList = frontChannelMapper.selectFrontChannelUnion();
+        mapList = frontChannelMapper.getList(new MapListParam());
         return mapList;
     }
 

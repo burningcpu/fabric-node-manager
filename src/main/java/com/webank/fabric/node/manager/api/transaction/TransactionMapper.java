@@ -1,15 +1,31 @@
 package com.webank.fabric.node.manager.api.transaction;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.webank.fabric.node.manager.common.pojo.transaction.MinMaxBlock;
+import com.webank.fabric.node.manager.common.pojo.transaction.TransListParam;
 import com.webank.fabric.node.manager.common.pojo.transaction.TransactionDO;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 /**
  * interface of Transaction in db.
  */
 @Repository
-public interface TransactionMapper extends BaseMapper<TransactionDO> {
-    // 根据updateWrapper尝试更新，否继续执行saveOrUpdate(T)方法
-    boolean saveOrUpdate(TransactionDO entity, Wrapper<TransactionDO> updateWrapper);
+public interface TransactionMapper {
+
+    Integer add(@Param("tableName") String tableName, @Param("trans") TransactionDO transactionDO);
+
+    Integer getCount(@Param("tableName") String tableName, @Param("param") TransListParam param);
+
+    Integer getCountByMinMax(@Param("tableName") String tableName);
+
+    List<TransactionDO> getList(@Param("tableName") String tableName, @Param("param") TransListParam param);
+
+    List<MinMaxBlock> queryMinMaxBlock(@Param("tableName") String tableName);
+
+    Integer remove(@Param("tableName") String tableName,
+                   @Param("subTransNum") Integer subTransNum, @Param("channelId") Integer channelId);
+
+
 }

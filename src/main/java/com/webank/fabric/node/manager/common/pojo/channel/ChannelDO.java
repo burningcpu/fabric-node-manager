@@ -1,8 +1,8 @@
 package com.webank.fabric.node.manager.common.pojo.channel;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -10,12 +10,11 @@ import java.time.LocalDateTime;
  */
 @Data
 @Builder
-public class ChannelDO implements Serializable {
+public class ChannelDO {
     private Integer channelId;
     private String channelName;
     private Integer channelStatus;
     private long peerCount;
-    private String channelDesc;
     private LocalDateTime createTime;
     private LocalDateTime modifyTime;
 }

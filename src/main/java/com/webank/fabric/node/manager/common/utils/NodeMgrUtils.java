@@ -1,7 +1,7 @@
 package com.webank.fabric.node.manager.common.utils;
 
 import com.webank.fabric.node.manager.common.exception.NodeMgrException;
-import com.webank.fabric.node.manager.common.pojo.response.ConstantCode;
+import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;

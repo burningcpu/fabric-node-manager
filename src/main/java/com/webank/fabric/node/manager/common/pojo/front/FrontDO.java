@@ -1,18 +1,16 @@
 package com.webank.fabric.node.manager.common.pojo.front;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 import org.springframework.beans.BeanUtils;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  * front info on db.
  */
 @Data
-@Builder
-public class FrontDO implements Serializable {
+@NoArgsConstructor
+public class FrontDO {
     private Integer frontId;
     private String agency;
     private String frontIp;

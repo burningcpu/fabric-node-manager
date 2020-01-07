@@ -7,7 +7,6 @@ CREATE TABLE IF NOT EXISTS tb_channel (
         channel_name varchar(64) NOT NULL COMMENT '通道名称',
         channel_status int(1) DEFAULT '1' COMMENT '状态（1-正常 2-异常）',
         peer_count int DEFAULT '0' COMMENT '通道下节点数',
-        channel_desc varchar(1024) COMMENT '通道描述',
         create_time datetime DEFAULT NULL COMMENT '创建时间',
         modify_time datetime DEFAULT NULL COMMENT '修改时间',
         PRIMARY KEY (channel_id)
@@ -23,7 +22,7 @@ CREATE TABLE IF NOT EXISTS tb_peer (
   channel_id int(11) NOT NULL COMMENT '所属通道编号',
   peer_name varchar(120) NOT NULL COMMENT '节点名称',
   peer_address varchar(50) DEFAULT NULL COMMENT '节点ip',
-  block_height bigint(20) DEFAULT '0' COMMENT '节点块高',
+  block_number bigint(20) DEFAULT '0' COMMENT '节点块高',
   description text DEFAULT NULL COMMENT '描述',
   create_time datetime DEFAULT NULL COMMENT '创建时间',
   modify_time datetime DEFAULT NULL COMMENT '修改时间',

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--对应mapper接口 -->
+<mapper namespace="com.webank.fabric.node.manager.api.channel.FrontChannelMapper">
+  <resultMap id="frontChannelMap" type="com.webank.fabric.node.manager.common.pojo.channel.FrontChannelDO">
+    <id column="map_id" javaType="java.lang.Integer" jdbcType="INTEGER" property="mapId"/>
+    <result column="channel_id" javaType="java.lang.Integer" jdbcType="INTEGER" property="channelId"/>
+    <result column="channel_name" javaType="java.lang.String" jdbcType="VARCHAR" property="channelName"/>
+    <result column="front_id" javaType="java.lang.Integer" jdbcType="INTEGER" property="frontId"/>
+    <result column="front_ip" javaType="java.lang.String" jdbcType="VARCHAR"  property="frontIp"/>
+    <result column="front_port" javaType="java.lang.Integer" jdbcType="INTEGER" property="frontPort"/>
+  </resultMap>
+
+
+  <insert id="add" parameterType="com.webank.fabric.node.manager.common.pojo.channel.FrontChannelDO">
+    insert ignore into tb_front_channel_map
+    (front_id,channel_id,create_time,modify_time)values(#{frontId},#{channelId},NOW(),NOW())
+    <selectKey keyProperty="mapId" order="AFTER" resultType="java.lang.Integer">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+  </insert>
+
+  <select id="getCount" resultType="java.lang.Integer" parameterType="com.webank.fabric.node.manager.common.pojo.channel.MapListParam">
+    select count(1) from tb_front_channel_map where 1=1
+    <if test="mapId != null and mapId != ''">
+      and map_id = #{param.mapId}
+    </if>
+    <if test="frontId != null and frontId != ''">
+      and front_id = #{frontId}
+    </if>
+    <if test="channelId != null and channelId != ''">
+      and channel_id = #{channelId}
+    </if>
+  </select>
+
+  <select id="getList" resultMap="frontChannelMap" parameterType="com.webank.fabric.node.manager.common.pojo.channel.MapListParam">
+    select a.map_id,a.front_id,a.channel_id,b.front_ip,b.front_port,c.channel_name
+    from tb_front_channel_map a
+    left join tb_front b on(a.front_id=b.front_id)
+    left join tb_channel c on(a.channel_id=c.channel_id)
+    where 1=1
+    <if test="mapId != null and mapId != ''">
+      and a.map_id = #{param.mapId}
+    </if>
+    <if test="frontId != null and frontId != ''">
+      and a.front_id = #{frontId}
+    </if>
+    <if test="channelId != null and channelId != ''">
+      and a.channel_id = #{channelId}
+    </if>
+  </select>
+
+  <delete id="removeByChannelId" parameterType="java.lang.Integer">
+		delete from tb_front_channel_map where channel_id = #{channelId}
+	</delete>
+
+  <delete id="removeByFrontId" parameterType="java.lang.Integer">
+		delete from tb_front_channel_map where front_id = #{frontId}
+	</delete>
+</mapper>

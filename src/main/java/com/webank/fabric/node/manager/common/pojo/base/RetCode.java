@@ -13,31 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.fabric.node.manager.common.pojo.response;
+package com.webank.fabric.node.manager.common.pojo.base;
 
 import lombok.Data;
 
 /**
- * Entity class of response info.
+ * class about exception code and message.
  */
 @Data
-public class BaseResponse {
+public class RetCode {
 
-    private int code;
+    private Integer code;
     private String message;
-    private Object data;
 
-    public BaseResponse() {
+    public RetCode(int code, String message) {
+        this.code = code;
+        this.message = message;
     }
 
-    public BaseResponse(CodeAndMsg retcode) {
-        this.code = retcode.getCode();
-        this.message = retcode.getMessage();
+    public static RetCode mark(int code, String message) {
+        return new RetCode(code, message);
     }
 
-    public BaseResponse(CodeAndMsg retcode, Object data) {
-        this.code = retcode.getCode();
-        this.message = retcode.getMessage();
-        this.data = data;
+    public static RetCode mark(Integer code) {
+        return new RetCode(code, null);
     }
 }
