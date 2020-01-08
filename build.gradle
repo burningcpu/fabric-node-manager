@@ -28,7 +28,8 @@ List springboot = [
 List database = [
         "com.zaxxer:HikariCP:3.2.0",
         "mysql:mysql-connector-java:8.0.13",
-        "org.mybatis.spring.boot:mybatis-spring-boot-starter:2.0.0"
+        "org.mybatis.spring.boot:mybatis-spring-boot-starter:2.0.0",
+        "org.springframework:spring-tx:5.2.2.RELEASE"
 ]
 
 List fabricSdk = ["org.hyperledger.fabric-sdk-java:fabric-sdk-java:1.4.7"]

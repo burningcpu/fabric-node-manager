@@ -50,7 +50,7 @@
     </select>
 
 
-    <select id="getList" resultMap="frontMap" parameterType="com.webank.webase.node.mgr.front.entity.FrontParam">
+    <select id="getList" resultMap="frontMap" parameterType="com.webank.fabric.node.manager.common.pojo.front.FrontParam">
         select * from tb_front
         where front_id in(select front_id from tb_front_channel_map where 1=1
         <if test="channelId != null and channelId !=''">

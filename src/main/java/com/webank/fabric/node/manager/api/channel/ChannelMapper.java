@@ -14,10 +14,19 @@ import java.util.List;
 @Repository
 public interface ChannelMapper {
     /**
-     * add channel info
+     * add channel info.
      */
-    int save(ChannelDO channelDO);
+    int add(ChannelDO channelDO);
 
+    /**
+     * update channel info.
+     */
+    void update(ChannelDO channelDO);
+
+    /**
+     * query by channelId.
+     */
+    ChannelDO queryByChannelId(@Param("channelId") Integer channelId);
 
     /**
      * query channel count.

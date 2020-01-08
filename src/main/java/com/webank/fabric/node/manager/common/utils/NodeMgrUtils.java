@@ -1,5 +1,6 @@
 package com.webank.fabric.node.manager.common.utils;
 
+import com.alibaba.fastjson.JSON;
 import com.webank.fabric.node.manager.common.exception.NodeMgrException;
 import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
 import lombok.extern.slf4j.Slf4j;
@@ -42,5 +43,18 @@ public class NodeMgrUtils {
                 }
             }
         }
+    }
+
+    /**
+     * convert object to java bean.
+     */
+    public static <T> T object2JavaBean(Object obj, Class<T> clazz) {
+        if (obj == null || clazz == null) {
+            log.warn("object2JavaBean. obj or clazz null");
+            return null;
+        }
+        String jsonStr = JSON.toJSONString(obj);
+
+        return JSON.parseObject(jsonStr, clazz);
     }
 }

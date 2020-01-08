@@ -1,7 +1,9 @@
 package com.webank.fabric.node.manager.common.pojo.channel;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -10,6 +12,8 @@ import java.time.LocalDateTime;
  */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ChannelDO {
     private Integer channelId;
     private String channelName;
@@ -17,4 +21,9 @@ public class ChannelDO {
     private long peerCount;
     private LocalDateTime createTime;
     private LocalDateTime modifyTime;
+
+    public ChannelDO(String channelName, long peerCount) {
+        this.channelName = channelName;
+        this.peerCount = peerCount;
+    }
 }

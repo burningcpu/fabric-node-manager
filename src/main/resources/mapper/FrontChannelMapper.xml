@@ -4,7 +4,7 @@
 
 <!--对应mapper接口 -->
 <mapper namespace="com.webank.fabric.node.manager.api.channel.FrontChannelMapper">
-  <resultMap id="frontChannelMap" type="com.webank.fabric.node.manager.common.pojo.channel.FrontChannelDO">
+  <resultMap id="frontChannelMap" type="com.webank.fabric.node.manager.common.pojo.channel.FrontChannelUnionDO">
     <id column="map_id" javaType="java.lang.Integer" jdbcType="INTEGER" property="mapId"/>
     <result column="channel_id" javaType="java.lang.Integer" jdbcType="INTEGER" property="channelId"/>
     <result column="channel_name" javaType="java.lang.String" jdbcType="VARCHAR" property="channelName"/>

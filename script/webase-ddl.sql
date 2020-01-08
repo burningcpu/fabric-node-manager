@@ -21,14 +21,16 @@ CREATE TABLE IF NOT EXISTS tb_peer (
   peer_id int(11) NOT NULL AUTO_INCREMENT COMMENT '节点编号',
   channel_id int(11) NOT NULL COMMENT '所属通道编号',
   peer_name varchar(120) NOT NULL COMMENT '节点名称',
-  peer_address varchar(50) DEFAULT NULL COMMENT '节点ip',
+  peer_url varchar(50) NOT NULL COMMENT '节点请求路径',
+  peer_ip varchar(16) DEFAULT NULL COMMENT '节点ip',
+  peer_port int(11) NOT NULL COMMENT '节点端口',
   block_number bigint(20) DEFAULT '0' COMMENT '节点块高',
   description text DEFAULT NULL COMMENT '描述',
   create_time datetime DEFAULT NULL COMMENT '创建时间',
   modify_time datetime DEFAULT NULL COMMENT '修改时间',
-  PRIMARY KEY (peer_id)
+  PRIMARY KEY (peer_id),
+  unique  unique_channel_peer (channel_id,peer_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='节点表';
-
 
 
 -- ----------------------------
@@ -38,6 +40,7 @@ CREATE TABLE IF NOT EXISTS tb_front (
   front_id int(11) NOT NULL AUTO_INCREMENT COMMENT '前置服务编号',
   front_ip varchar(16) NOT NULL COMMENT '前置服务ip',
   front_port int(11) DEFAULT NULL COMMENT '前置服务端口',
+  agency varchar(32) NOT NULL COMMENT '所属机构名称',
   create_time datetime DEFAULT NULL COMMENT '创建时间',
   modify_time datetime DEFAULT NULL COMMENT '修改时间',
   PRIMARY KEY (front_id),
@@ -144,7 +147,7 @@ CREATE TABLE IF NOT EXISTS tb_token (
 -- Table structure for tb_transaction_{channelId}
 -- ----------------------------
  CREATE TABLE IF NOT EXISTS ${tableName} (
-        trans_id varchar(128) NOT NULL COMMENT 'txId',
+        txId varchar(128) NOT NULL COMMENT 'txId',
         block_number bigint(25) NOT NULL COMMENT '所属区块',
         creator varchar(60) DEFAULT NULL COMMENT 'creator(截取实际内容的前60位)',
         action_count int(11) DEFAULT NULL COMMENT '事件数（即：transactionActionInfo）',
@@ -152,7 +155,7 @@ CREATE TABLE IF NOT EXISTS tb_token (
         envelope_type varchar(25) NOT NULL COMMENT '交易类型（TRANSACTION_ENVELOPE,ENVELOPE）',
         create_time datetime DEFAULT NULL COMMENT '创建时间',
         modify_time datetime DEFAULT NULL COMMENT '修改时间',
-        PRIMARY KEY (trans_hash),
+        PRIMARY KEY (txId),
         KEY index_flag (statistics_flag)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='交易信息表';
 

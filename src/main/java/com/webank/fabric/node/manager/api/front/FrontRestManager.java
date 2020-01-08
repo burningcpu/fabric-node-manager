@@ -8,12 +8,12 @@ import com.webank.fabric.node.manager.common.exception.NodeMgrException;
 import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
 import com.webank.fabric.node.manager.common.pojo.channel.FrontChannelUnionDO;
 import com.webank.fabric.node.manager.common.pojo.front.FrontProperties;
+import com.webank.fabric.node.manager.common.pojo.peer.PeerDTO;
 import com.webank.fabric.node.manager.common.utils.BeanUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.hyperledger.fabric.protos.common.Common;
 import org.hyperledger.fabric.sdk.BlockInfo;
-import org.hyperledger.fabric.sdk.Peer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Repository;
@@ -32,8 +32,8 @@ import java.util.*;
 @Repository
 public class FrontRestManager {
     public static final String URI_GET_CHANNEL_NAME = "sdk/channelName";
-    public static final String URI_GET_PEER_LIST = "sdk/listPeers";
-    public static final String URI_GET_BLOCK_HEIGHT = "sdk/currentBlockHeight?peerAddress=%1s";
+    public static final String URI_GET_PEER_LIST = "sdk/peers";
+    public static final String URI_GET_BLOCK_HEIGHT = "sdk/currentBlockHeight?peerUrl=%1s";
     public static final String URI_BLOCK_BY_NUMBER = "sdk/queryBlockByNumber/%1d";
     public static final String URI_BLOCK_BY_HASH = "sdk/queryBlockByHash/%1s";
     @Autowired
@@ -51,15 +51,15 @@ public class FrontRestManager {
     /**
      * get channelName from specific front.
      */
-    public String getChannelNameFromSpecificFront(String nodeIp, Integer frontPort) {
-        return getFromSpecificFront(nodeIp, frontPort, URI_GET_CHANNEL_NAME, String.class);
+    public String getChannelNameFromSpecificFront(String frontIp, Integer frontPort) {
+        return getFromSpecificFront(frontIp, frontPort, URI_GET_CHANNEL_NAME, String.class);
     }
 
     /**
      * get channelName from specific front.
      */
-    public Collection<Peer> getPeersFromSpecificFront(String nodeIp, Integer frontPort) {
-        return getFromSpecificFront(nodeIp, frontPort, URI_GET_PEER_LIST, Collection.class);
+    public PeerDTO[] getPeersFromSpecificFront(String frontIp, Integer frontPort) {
+        return getFromSpecificFront(frontIp, frontPort, URI_GET_PEER_LIST, PeerDTO[].class);
     }
 
 
@@ -140,7 +140,12 @@ public class FrontRestManager {
             return response.getBody();
         } catch (HttpStatusCodeException e) {
             JSONObject error = JSONObject.parseObject(e.getResponseBodyAsString());
-            throw new NodeMgrException(error.getInteger("code"), error.getString("errorMessage"));
+            log.error("http request fail. error:{}", JSON.toJSONString(error));
+            if (error.containsKey("code") && error.containsKey("errorMessage")) {
+                throw new NodeMgrException(error.getInteger("code"),
+                        error.getString("errorMessage"));
+            }
+            throw new NodeMgrException(ConstantCode.REQUEST_FRONT_FAIL);
         }
     }
 
@@ -255,8 +260,11 @@ public class FrontRestManager {
             } catch (HttpStatusCodeException e) {
                 JSONObject error = JSONObject.parseObject(e.getResponseBodyAsString());
                 log.error("http request fail. error:{}", JSON.toJSONString(error));
-                throw new NodeMgrException(error.getInteger("code"),
-                        error.getString("errorMessage"));
+                if (error.containsKey("code") && error.containsKey("errorMessage")) {
+                    throw new NodeMgrException(error.getInteger("code"),
+                            error.getString("errorMessage"));
+                }
+                throw new NodeMgrException(ConstantCode.REQUEST_FRONT_FAIL);
             }
         }
         return null;

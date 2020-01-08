@@ -34,7 +34,7 @@ public class ConstantCode {
     /**
      * Business exception.
      */
-    public static final RetCode REQUEST_FRONT_FAIL = RetCode.mark(204000, "request front fail");
+    public static final RetCode REQUEST_FRONT_FAIL = RetCode.mark(204000, "request front service failed");
 
     public static final RetCode SERVER_CONNECT_FAIL = RetCode.mark(204001, "wrong host or port");
 

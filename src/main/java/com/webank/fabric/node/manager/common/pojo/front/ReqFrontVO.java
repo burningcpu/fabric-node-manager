@@ -17,6 +17,8 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 public class ReqFrontVO {
     @NotBlank
+    private String agency;
+    @NotBlank
     private String frontIp;
     @NotNull
     private Integer frontPort;

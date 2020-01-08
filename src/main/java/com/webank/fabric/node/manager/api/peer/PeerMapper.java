@@ -55,4 +55,10 @@ public interface PeerMapper {
      * delete by channelId.
      */
     Integer deleteByChannelId(@Param("channelId") Integer channelId);
+
+
+    /**
+     * query by peerIp and peerPort.
+     */
+    PeerDO queryByIpPort(@Param("peerIp") String peerIp, @Param("peerPort") Integer peerPort);
 }

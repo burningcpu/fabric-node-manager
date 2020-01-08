@@ -7,6 +7,7 @@ import com.webank.fabric.node.manager.common.pojo.channel.FrontChannelDO;
 import com.webank.fabric.node.manager.common.pojo.channel.FrontChannelUnionDO;
 import com.webank.fabric.node.manager.common.pojo.channel.MapListParam;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class FrontChannelService {
+    @Autowired
     private FrontChannelMapper frontChannelMapper;
 
 

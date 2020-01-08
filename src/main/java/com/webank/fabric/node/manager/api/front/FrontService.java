@@ -9,15 +9,18 @@ import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
 import com.webank.fabric.node.manager.common.pojo.channel.ChannelDO;
 import com.webank.fabric.node.manager.common.pojo.front.FrontDO;
 import com.webank.fabric.node.manager.common.pojo.front.ReqFrontVO;
+import com.webank.fabric.node.manager.common.pojo.peer.PeerDO;
+import com.webank.fabric.node.manager.common.pojo.peer.PeerDTO;
 import com.webank.fabric.node.manager.common.utils.NodeMgrUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.hyperledger.fabric.sdk.Peer;
+import org.apache.commons.compress.utils.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigInteger;
-import java.util.Collection;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * service of front.
@@ -46,7 +49,8 @@ public class FrontService {
         //query channel
         String channel = frontRestManager.getChannelNameFromSpecificFront(frontIp, frontPort);
         //query peer list
-        Collection<Peer> peers = frontRestManager.getPeersFromSpecificFront(frontIp, frontPort);
+        PeerDTO[] peerArr = frontRestManager.getPeersFromSpecificFront(frontIp, frontPort);
+        List<PeerDTO> peerList = Arrays.asList(peerArr);
         //save front
         FrontDO frontDo = new FrontDO(reqFrontVO);
         frontMapper.add(frontDo);
@@ -55,23 +59,53 @@ public class FrontService {
             throw new NodeMgrException(ConstantCode.SAVE_FRONT_FAIL);
         }
 
-
-        long peerCount = peers.stream().filter(p -> p.getName().contains(":")).count();
+        //Filter duplicate nodes
+        Map<String, PeerDTO> peerDtoMap = filterDuplicatePeers(peerList);
         //save channel
-        ChannelDO channelDO = channelService.saveChannel(channel, peerCount);
-        frontChannelService.newFrontChannel(frontDo.getFrontId(), channelDO.getChannelId());
-
-        //save peers
-        for (Peer peer : peers) {
-            BigInteger blockHeight = frontRestManager.getBlockHeightFromSpecificFront(frontIp, frontPort, peer.getUrl());
-            peerService.addPeerInfo(peer.getName(), channelDO.getChannelId(), peer.getUrl(), blockHeight);
+        Integer channelId = queryChannelId(peerDtoMap);
+        ChannelDO channelDO;
+        if (channelId == null) {
+            channelDO = channelService.addChannel(channel, peerDtoMap.size());
+        } else {
+            channelDO = channelService.updatePeerCount(channelId, peerDtoMap.size());
         }
-
-
+        frontChannelService.newFrontChannel(frontDo.getFrontId(), channelDO.getChannelId());
+        //save peers
+        peerService.savePeerInfo(frontIp, frontPort, channelDO.getChannelId(), peerDtoMap);
         //clear catch
         frontChannelService.clearMapList();
         return frontDo;
     }
 
 
+    /**
+     * Filter duplicate nodes
+     */
+    private Map<String, PeerDTO> filterDuplicatePeers(List<PeerDTO> peerList) {
+        Map<String, PeerDTO> peerDtoMap = new HashMap<>();
+        peerList.stream().forEach(p -> peerDtoMap.put(p.getPeerName(), NodeMgrUtils.object2JavaBean(p, PeerDTO.class)));
+        for (PeerDTO peerDTO : peerList) {
+            String peerName = peerDTO.getPeerName();
+            if (peerDtoMap.containsKey(peerName) && StringUtils.isNotBlank(peerDTO.getPeerIp())) {
+                peerDtoMap.put(peerName, peerDTO);
+            }
+        }
+        return peerDtoMap;
+    }
+
+    /**
+     * query channelId from databases.
+     */
+    private Integer queryChannelId(Map<String, PeerDTO> peerDtoMap) {
+        Set<String> peerNameSet = peerDtoMap.keySet();
+        for (String peerName : peerNameSet) {
+            String peerIp = peerDtoMap.get(peerName).getPeerIp();
+            int peerPort = peerDtoMap.get(peerName).getPeerPort();
+            PeerDO peerDO = peerService.queryByIpPort(peerIp, peerPort);
+            if (peerDO != null) {
+                return peerDO.getChannelId();
+            }
+        }
+        return null;
+    }
 }

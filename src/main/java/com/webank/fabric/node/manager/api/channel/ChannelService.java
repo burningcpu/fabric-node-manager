@@ -5,7 +5,6 @@ import com.webank.fabric.node.manager.accessory.tablecreate.TableCreateService;
 import com.webank.fabric.node.manager.common.exception.NodeMgrException;
 import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
 import com.webank.fabric.node.manager.common.pojo.channel.ChannelDO;
-import com.webank.fabric.node.manager.common.pojo.channel.ChannelGeneral;
 import com.webank.fabric.node.manager.common.pojo.channel.StatisticalChannelTransInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,18 +24,18 @@ public class ChannelService {
     @Autowired
     private TableCreateService tableCreateService;
 
+
     /**
-     * save channel.
+     * new channel.
      */
-    public ChannelDO saveChannel(String channelName, long countOfPeers) {
-        ChannelDO channelDO = ChannelDO.builder().channelName(channelName).peerCount(countOfPeers).build();
-        channelMapper.save(channelDO);
+    public ChannelDO addChannel(String channelName, long countOfPeers) {
+        ChannelDO channelDO = new ChannelDO(channelName, countOfPeers);
+        channelMapper.add(channelDO);
 
         if (channelDO.getChannelId() == null) {
-            log.error("");
+            log.error("saveChannel fail:channelId is null");
             throw new NodeMgrException(ConstantCode.SAVE_CHANNEL_FAIL);
         }
-
 
         //create table by channel id
         tableCreateService.newTableByChannelId(channelDO.getChannelId());
@@ -44,6 +43,19 @@ public class ChannelService {
         return channelDO;
     }
 
+    /**
+     * update peer count.
+     */
+    public ChannelDO updatePeerCount(int channelId, int peerCount) {
+        ChannelDO channelDO = channelMapper.queryByChannelId(channelId);
+        if (channelDO == null) {
+            log.error("update updatePeerCount fail:invalid channelId[{}]", channelId);
+            throw new NodeMgrException(ConstantCode.SAVE_CHANNEL_FAIL);
+        }
+        channelDO.setPeerCount(peerCount);
+        channelMapper.update(channelDO);
+        return channelDO;
+    }
 
     /**
      * query count of group.

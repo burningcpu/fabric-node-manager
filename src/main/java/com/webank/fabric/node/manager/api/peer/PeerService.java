@@ -1,9 +1,11 @@
 package com.webank.fabric.node.manager.api.peer;
 
 import com.alibaba.fastjson.JSON;
+import com.webank.fabric.node.manager.api.front.FrontRestManager;
 import com.webank.fabric.node.manager.common.exception.NodeMgrException;
 import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
 import com.webank.fabric.node.manager.common.pojo.peer.PeerDO;
+import com.webank.fabric.node.manager.common.pojo.peer.PeerDTO;
 import com.webank.fabric.node.manager.common.pojo.peer.PeerParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * service of peer.
@@ -22,19 +26,20 @@ public class PeerService {
 
     @Autowired
     private PeerMapper peerMapper;
+    @Autowired
+    private FrontRestManager frontRestManager;
 
     /**
      * save channel.
      */
-    public PeerDO addPeerInfo(String peerName, int channelId, String peerAddress, BigInteger blockHeight) {
-        PeerDO peerDO = PeerDO.builder()
-                .peerName(peerName)
-                .channelId(channelId)
-                .peerAddress(peerAddress)
-                .blockNumber(blockHeight)
-                .build();
-        peerMapper.add(peerDO);
-        return peerDO;
+    public void savePeerInfo(String frontIp, Integer frontPort, int channelId, Map<String, PeerDTO> peerDtoMap) {
+        Set<String> peerNameSet = peerDtoMap.keySet();
+        for (String peerName : peerNameSet) {
+            String peerUrl = peerDtoMap.get(peerName).getPeerUrl();
+            BigInteger blockNumber = frontRestManager.getBlockHeightFromSpecificFront(frontIp, frontPort, peerUrl);
+            PeerDO peerDO = new PeerDO(peerName, channelId, peerUrl, blockNumber);
+            peerMapper.add(peerDO);
+        }
     }
 
     /**
@@ -65,6 +70,13 @@ public class PeerService {
 
         log.debug("end qureyPeerList listOfPeer:{}", JSON.toJSONString(listOfPeer));
         return listOfPeer;
+    }
+
+    /**
+     * query by peerIp and peerPort.
+     */
+    public PeerDO queryByIpPort(String peerIp, int peerPort) {
+        return peerMapper.queryByIpPort(peerIp, peerPort);
     }
 
     /**
