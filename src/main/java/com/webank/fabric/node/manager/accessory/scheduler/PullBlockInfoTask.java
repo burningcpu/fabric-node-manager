@@ -38,7 +38,7 @@ public class PullBlockInfoTask {
     @Autowired
     private FrontChannelService frontChannelService;
 
-    @Scheduled(fixedDelayString = "${schedule.pullBlockTaskFixedDelay}")
+    //@Scheduled(fixedDelayString = "${schedule.pullBlockTaskFixedDelay}")
     public void taskStart() {
         pullBlockStart();
     }

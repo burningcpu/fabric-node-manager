@@ -60,10 +60,10 @@ public class ChannelService {
     /**
      * query count of group.
      */
-    public Integer countOfChannel(Integer channelId, Integer groupStatus) throws NodeMgrException {
+    public Integer countOfChannel(Integer channelId, Integer channelStatus) throws NodeMgrException {
         log.debug("start countOfChannel channelId:{}", channelId);
         try {
-            Integer count = channelMapper.getCount(channelId, groupStatus);
+            Integer count = channelMapper.getCount(channelId, channelStatus);
             log.debug("end countOfChannel channelId:{} count:{}", channelId, count);
             return count;
         } catch (RuntimeException ex) {
@@ -75,10 +75,10 @@ public class ChannelService {
     /**
      * query all group info.
      */
-    public List<ChannelDO> getChannelList(Integer groupStatus) throws NodeMgrException {
+    public List<ChannelDO> getChannelList(Integer channelStatus) throws NodeMgrException {
         log.debug("start getChannelList");
         try {
-            List<ChannelDO> groupList = channelMapper.getList(groupStatus);
+            List<ChannelDO> groupList = channelMapper.getList(channelStatus);
 
             log.debug("end getChannelList groupList:{}", JSON.toJSONString(groupList));
             return groupList;

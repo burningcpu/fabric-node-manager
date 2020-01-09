@@ -60,5 +60,11 @@ public interface PeerMapper {
     /**
      * query by peerIp and peerPort.
      */
-    PeerDO queryByIpPort(@Param("peerIp") String peerIp, @Param("peerPort") Integer peerPort);
+    PeerDO queryByIpAndPort(@Param("peerIp") String peerIp, @Param("peerPort") Integer peerPort);
+
+    /**
+     * query by channelId and peerName.
+     */
+    PeerDO queryByChannelIdAndPeerName(@Param("channelId") Integer channelId, @Param("peerName") String peerName);
+
 }

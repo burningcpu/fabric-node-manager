@@ -8,6 +8,8 @@ import com.webank.fabric.node.manager.common.pojo.peer.PeerDO;
 import com.webank.fabric.node.manager.common.pojo.peer.PeerDTO;
 import com.webank.fabric.node.manager.common.pojo.peer.PeerParam;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,12 +37,33 @@ public class PeerService {
     public void savePeerInfo(String frontIp, Integer frontPort, int channelId, Map<String, PeerDTO> peerDtoMap) {
         Set<String> peerNameSet = peerDtoMap.keySet();
         for (String peerName : peerNameSet) {
-            String peerUrl = peerDtoMap.get(peerName).getPeerUrl();
-            BigInteger blockNumber = frontRestManager.getBlockHeightFromSpecificFront(frontIp, frontPort, peerUrl);
-            PeerDO peerDO = new PeerDO(peerName, channelId, peerUrl, blockNumber);
-            peerMapper.add(peerDO);
+            PeerDTO peerDTO = peerDtoMap.get(peerName);
+
+            //blockNumber of peer
+            BigInteger blockNumber = null;
+            if (StringUtils.isNotBlank(peerDTO.getPeerIp())) {
+                blockNumber = frontRestManager.getBlockNumberFromSpecificFront(frontIp, frontPort, peerDTO.getPeerUrl());
+            }
+
+            //Determine if peer is updated or new
+            PeerDO peerDO = queryByChannelIdAndPeerName(channelId, peerName);
+            if (peerDO == null) {
+                //new
+                peerDO = new PeerDO();
+                BeanUtils.copyProperties(peerDTO, peerDO);
+                peerDO.setBlockNumber(blockNumber).setChannelId(channelId);
+                peerMapper.add(peerDO);
+            }else {
+                //update
+                peerDO.setBlockNumber(blockNumber).setPeerIp(peerDTO.getPeerIp()).setPeerPort(peerDTO.getPeerPort());
+                peerMapper.update(peerDO);
+            }
+
+
+
         }
     }
+
 
     /**
      * query count of node.
@@ -75,9 +98,18 @@ public class PeerService {
     /**
      * query by peerIp and peerPort.
      */
-    public PeerDO queryByIpPort(String peerIp, int peerPort) {
-        return peerMapper.queryByIpPort(peerIp, peerPort);
+    public PeerDO queryByIpAndPort(String peerIp, int peerPort) {
+        return peerMapper.queryByIpAndPort(peerIp, peerPort);
     }
+
+
+    /**
+     * query by channelId and peerName.
+     */
+    public PeerDO queryByChannelIdAndPeerName(Integer channelId, String peerName) {
+        return peerMapper.queryByChannelIdAndPeerName(channelId, peerName);
+    }
+
 
     /**
      * query node by groupId

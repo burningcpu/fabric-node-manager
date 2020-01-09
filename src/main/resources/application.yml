@@ -40,7 +40,7 @@ constant:
 #log config
 logging:
   config: classpath:log4j2.xml
-  level.com.webank.fabric.node.manager: info
+  level.com.webank.fabric.node.manager: debug
 
 #front config
 front:

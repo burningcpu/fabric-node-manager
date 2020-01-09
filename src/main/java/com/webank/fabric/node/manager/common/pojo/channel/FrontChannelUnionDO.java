@@ -15,4 +15,5 @@ import lombok.ToString;
 public class FrontChannelUnionDO extends FrontChannelDO {
     private String frontIp;
     private Integer frontPort;
+    private String channelName;
 }

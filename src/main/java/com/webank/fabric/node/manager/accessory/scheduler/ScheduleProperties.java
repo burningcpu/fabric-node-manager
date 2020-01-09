@@ -18,8 +18,8 @@ public class ScheduleProperties {
     private BigInteger pullBlockInitCnts;
     private Long pullBlockTaskFixedDelay;
     private boolean isDeleteInfo;
-    private Long transRetainMax;
-    private Long blockRetainMax;
+    private BigInteger transRetainMax;
+    private BigInteger blockRetainMax;
     private String deleteInfoCron;
     private String statisticsTransDailyCron;
 }

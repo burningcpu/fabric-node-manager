@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,21 +37,22 @@ public class TransactionService {
      */
     public void saveTransInfo(int channelId, BigInteger blockNumber, BlockInfo.EnvelopeInfo envelopeInfo) {
         // save transaction to db
-        TransactionDO trans = TransactionDO.builder()
-                .txId(envelopeInfo.getTransactionID())
-                .blockNumber(blockNumber)
-                .creator(envelopeInfo.getCreator().getId().substring(0, 60))
-                .envelopeType(envelopeInfo.getType().toString())
-                .build();
         if (envelopeInfo.getType() == TRANSACTION_ENVELOPE) {
-            int actionCount = 0;
-            for (BlockInfo.TransactionEnvelopeInfo.TransactionActionInfo tmp : ((BlockInfo.TransactionEnvelopeInfo) envelopeInfo).getTransactionActionInfos()) {
-                actionCount++;
-            }
-            trans.setActionCount(actionCount);
+            BlockInfo.TransactionEnvelopeInfo transactionEnvelopeInfo = (BlockInfo.TransactionEnvelopeInfo) envelopeInfo;
+
+            TransactionDO trans = TransactionDO.builder()
+                    .txId(envelopeInfo.getTransactionID())
+                    .blockNumber(blockNumber)
+                    .creator(envelopeInfo.getCreator().getId().substring(0, 60))
+                    .envelopeType(envelopeInfo.getType().toString())
+                    .actionCount(transactionEnvelopeInfo.getTransactionActionInfoCount())
+                    .transTimestamp(LocalDateTime.from(LocalDateTime.ofInstant(envelopeInfo.getTimestamp().toInstant(), ZoneId.systemDefault())))
+                    .build();
+
+            String tableName = TableName.TRANS.getTableName(channelId);
+            transactionMapper.add(tableName, trans);
         }
-        String tableName = TableName.TRANS.getTableName(channelId);
-        transactionMapper.add(tableName, trans);
+
     }
 
 

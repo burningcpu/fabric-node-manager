@@ -8,6 +8,7 @@ import com.webank.fabric.node.manager.common.exception.NodeMgrException;
 import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
 import com.webank.fabric.node.manager.common.pojo.channel.ChannelDO;
 import com.webank.fabric.node.manager.common.pojo.front.FrontDO;
+import com.webank.fabric.node.manager.common.pojo.front.FrontParam;
 import com.webank.fabric.node.manager.common.pojo.front.ReqFrontVO;
 import com.webank.fabric.node.manager.common.pojo.peer.PeerDO;
 import com.webank.fabric.node.manager.common.pojo.peer.PeerDTO;
@@ -51,6 +52,13 @@ public class FrontService {
         //query peer list
         PeerDTO[] peerArr = frontRestManager.getPeersFromSpecificFront(frontIp, frontPort);
         List<PeerDTO> peerList = Arrays.asList(peerArr);
+        //Confirm that the front has not been saved
+        FrontParam param = FrontParam.builder().frontIp(frontIp).frontPort(frontPort).build();
+        int count = frontMapper.getCount(param);
+        if (count > 0) {
+            log.error("font ip:{} port:{} already exists",frontIp,frontPort);
+            throw new NodeMgrException(ConstantCode.FRONT_EXISTS);
+        }
         //save front
         FrontDO frontDo = new FrontDO(reqFrontVO);
         frontMapper.add(frontDo);
@@ -100,8 +108,11 @@ public class FrontService {
         Set<String> peerNameSet = peerDtoMap.keySet();
         for (String peerName : peerNameSet) {
             String peerIp = peerDtoMap.get(peerName).getPeerIp();
+            if(StringUtils.isBlank(peerIp))
+                continue;
+
             int peerPort = peerDtoMap.get(peerName).getPeerPort();
-            PeerDO peerDO = peerService.queryByIpPort(peerIp, peerPort);
+            PeerDO peerDO = peerService.queryByIpAndPort(peerIp, peerPort);
             if (peerDO != null) {
                 return peerDO.getChannelId();
             }

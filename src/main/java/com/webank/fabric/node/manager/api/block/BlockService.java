@@ -1,6 +1,7 @@
 package com.webank.fabric.node.manager.api.block;
 
 import com.alibaba.fastjson.JSON;
+import com.google.protobuf.Descriptors;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.webank.fabric.node.manager.accessory.scheduler.ScheduleProperties;
 import com.webank.fabric.node.manager.api.front.FrontRestManager;
@@ -10,7 +11,12 @@ import com.webank.fabric.node.manager.common.exception.NodeMgrException;
 import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
 import com.webank.fabric.node.manager.common.pojo.block.BlockInfoDO;
 import com.webank.fabric.node.manager.common.pojo.block.BlockListParam;
+import jdk.nashorn.internal.ir.Block;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.codec.binary.Hex;
+import org.hyperledger.fabric.protos.common.Common;
+import org.hyperledger.fabric.protos.peer.ChaincodeEventOuterClass;
+import org.hyperledger.fabric.protos.peer.PeerEvents;
 import org.hyperledger.fabric.sdk.BlockInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -19,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
@@ -52,12 +59,12 @@ public class BlockService {
         log.debug("start pullBlockByChannelId channelId:{}", channelId);
         try {
             //max block in chain
-            BigInteger maxChainBlock = frontRestManager.getLatestBlockNumber(channelId);
+            BigInteger maxChainBlock = frontRestManager.getLatestChannelBlockNumber(channelId);
             //next block
             BigInteger nextBlock = getNextBlockNumber(channelId);
 
             //pull block
-            while (Objects.nonNull(maxChainBlock) && maxChainBlock.compareTo(nextBlock) >= 0) {
+            while (Objects.nonNull(maxChainBlock) && maxChainBlock.compareTo(nextBlock) > 0) {
                 log.debug("continue pull block. maxChainBlock:{} nextBlock:{}", maxChainBlock,
                         nextBlock);
                 Thread.sleep(scheduleProperties.getPullBlockSleepTime());
@@ -66,7 +73,7 @@ public class BlockService {
 
                 //reset maxChainBlock
                 if (maxChainBlock.compareTo(nextBlock) < 0) {
-                    maxChainBlock = frontRestManager.getLatestBlockNumber(channelId);
+                    maxChainBlock = frontRestManager.getLatestChannelBlockNumber(channelId);
                 }
             }
         } catch (Exception ex) {
@@ -88,6 +95,7 @@ public class BlockService {
             log.info("pullBlockByNumber jump over. not found new block.");
             return;
         }
+
         //save block info
         saveBLockInfo(blockInfo, channelId);
     }
@@ -104,7 +112,7 @@ public class BlockService {
         if (scheduleProperties.getIsBlockPullFromZero()) {
             return BigInteger.ZERO;
         } else {
-            BigInteger initBlock = frontRestManager.getLatestBlockNumber(channelId);
+            BigInteger initBlock = frontRestManager.getLatestChannelBlockNumber(channelId);
             if (initBlock.compareTo(scheduleProperties.getPullBlockInitCnts()) > 0) {
                 initBlock = initBlock.subtract(scheduleProperties.getPullBlockInitCnts().
                         subtract(BigInteger.valueOf(1)));
@@ -122,6 +130,7 @@ public class BlockService {
      */
     @Transactional
     public void saveBLockInfo(BlockInfo blockInfo, Integer channelId) throws NodeMgrException {
+
         // save block info
         BlockInfoDO blockInfoDO = chainBlock2BlockInfoDO(blockInfo);
         addBlockInfo(blockInfoDO, channelId);
@@ -146,7 +155,7 @@ public class BlockService {
         if (blockInfo == null)
             return null;
 
-        String hash = String.valueOf(blockInfo.getDataHash());
+        String hash = Hex.encodeHexString(blockInfo.getDataHash());
         BigInteger blockNumber = BigInteger.valueOf(blockInfo.getBlockNumber());
         int transCount = blockInfo.getTransactionCount();
 

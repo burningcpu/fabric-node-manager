@@ -50,6 +50,8 @@ public class ConstantCode {
 
     public static final RetCode INVALID_CHANNEL_ID = RetCode.mark(204007, "invalid channel id");
 
+    public static final RetCode FRONT_EXISTS = RetCode.mark(204008, "front already exists");
+
 
     /* param exception */
     public static final RetCode PARAM_EXCEPTION = RetCode.mark(404000, "param exception");

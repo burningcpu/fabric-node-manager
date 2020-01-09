@@ -33,7 +33,8 @@ import java.util.*;
 public class FrontRestManager {
     public static final String URI_GET_CHANNEL_NAME = "sdk/channelName";
     public static final String URI_GET_PEER_LIST = "sdk/peers";
-    public static final String URI_GET_BLOCK_HEIGHT = "sdk/currentBlockHeight?peerUrl=%1s";
+    public static final String URI_GET_PEER_BLOCK_NUMBER = "sdk/peerBlockNumber?peerUrl=%1s";
+    public static final String URI_GET_CHANNEL_BLOCK_NUMBER = "sdk/channelBlockNumber";
     public static final String URI_BLOCK_BY_NUMBER = "sdk/queryBlockByNumber/%1d";
     public static final String URI_BLOCK_BY_HASH = "sdk/queryBlockByHash/%1s";
     @Autowired
@@ -66,8 +67,16 @@ public class FrontRestManager {
     /**
      * get blockHeight from specific front.
      */
-    public BigInteger getBlockHeightFromSpecificFront(String nodeIp, Integer frontPort, String peerAddress) {
-        String uri = String.format(URI_GET_BLOCK_HEIGHT, peerAddress);
+    public BigInteger getBlockNumberFromSpecificFront(String nodeIp, Integer frontPort, String peerUrl) {
+        String uri = String.format(URI_GET_PEER_BLOCK_NUMBER, peerUrl);
+        return getFromSpecificFront(nodeIp, frontPort, uri, BigInteger.class);
+    }
+
+    /**
+     * get blockHeight from specific front.
+     */
+    public BigInteger getChannelBlockNumberFromSpecificFront(String nodeIp, Integer frontPort, String peerUrl) {
+        String uri = String.format(URI_GET_CHANNEL_BLOCK_NUMBER, peerUrl);
         return getFromSpecificFront(nodeIp, frontPort, uri, BigInteger.class);
     }
 
@@ -75,11 +84,11 @@ public class FrontRestManager {
     /**
      * get latest blockNumber of channel.
      */
-    public BigInteger getLatestBlockNumber(int channelId) {
+    public BigInteger getLatestChannelBlockNumber(int channelId) {
         log.debug("start getLatestBlockNumber. channelId:{}", channelId);
-        BigInteger latestBlockNmber = getForEntity(channelId, URI_GET_BLOCK_HEIGHT, BigInteger.class);
-        log.debug("end getLatestBlockNumber. latestBlockNumber:{}", latestBlockNmber);
-        return latestBlockNmber;
+        BigInteger latestBlockNumber = getForEntity(channelId, URI_GET_CHANNEL_BLOCK_NUMBER, BigInteger.class);
+        log.debug("end getLatestBlockNumber. latestBlockNumber:{}", latestBlockNumber);
+        return latestBlockNumber;
     }
 
 
@@ -187,12 +196,12 @@ public class FrontRestManager {
     /**
      * append channelId to uri.
      */
-    private static String uriAddChannelId(Integer channelId, String uri) {
-        if (channelId == null || StringUtils.isBlank(uri)) {
+    private static String uriAddChannelName(String channelName, String uri) {
+        if (StringUtils.isBlank(channelName) || StringUtils.isBlank(uri)) {
             return null;
         }
 
-        return channelId + "/" + uri;
+        return channelName + "/" + uri;
     }
 
 
@@ -204,7 +213,7 @@ public class FrontRestManager {
         Iterator<FrontChannelUnionDO> iterator = list.iterator();
         while (iterator.hasNext()) {
             FrontChannelUnionDO frontChannelDO = iterator.next();
-            uri = uriAddChannelId(frontChannelDO.getChannelId(), uri);//append channelId to uri
+            //uri = uriAddChannelName(frontChannelDO.getChannelName(), uri);//append channelId to uri
             String url = String
                     .format(frontProperties.getServerAddress(), frontChannelDO.getFrontIp(),
                             frontChannelDO.getFrontPort(), uri)
