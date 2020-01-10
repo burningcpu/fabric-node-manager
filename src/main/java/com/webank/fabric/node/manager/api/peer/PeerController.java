@@ -74,18 +74,18 @@ public class PeerController {
     /**
      * get peer info.
      */
-    @GetMapping(value = "/peerInfo/{channelId}")
-    @ApiOperation(value = "getPeerInfo", notes = "get peer info by channelId")
-    public BaseResponse getPeerInfo(@PathVariable("channelId") Integer channelId)
+    @GetMapping(value = "/peerInfo/{peerId}")
+    @ApiOperation(value = "getPeerInfo", notes = "get peer info by peerId")
+    public BaseResponse getPeerInfo(@PathVariable("peerId") Integer peerId)
             throws NodeMgrException {
 
         Instant startTime = Instant.now();
-        log.info("start getPeerInfo startTime:{} channelId:{}",
-                startTime.toEpochMilli(), channelId);
+        log.info("start getPeerInfo startTime:{} peerId:{}",
+                startTime.toEpochMilli(), peerId);
 
         // param
         PeerParam param = new PeerParam();
-        param.setChannelId(channelId);
+        param.setPeerId(peerId);
 
         // query peer row
         PeerDO tbPeer = peerService.queryPeerInfo(param);

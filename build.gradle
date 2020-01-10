@@ -24,7 +24,6 @@ List springboot = [
         "org.springframework.boot:spring-boot-starter-log4j2:$springboot_version",
         "org.springframework.boot:spring-boot-starter-aop:$springboot_version"
 ]
-
 List database = [
         "com.zaxxer:HikariCP:3.2.0",
         "mysql:mysql-connector-java:8.0.13",

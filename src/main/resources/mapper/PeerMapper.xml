@@ -6,7 +6,7 @@
 <mapper namespace="com.webank.fabric.node.manager.api.peer.PeerMapper">
     <resultMap id="peerMap" type="com.webank.fabric.node.manager.common.pojo.peer.PeerDO">
         <id column="peer_id" javaType="java.lang.Integer" jdbcType="INTEGER" property="peerId"/>
-        <id column="channel_id" javaType="java.lang.Integer" jdbcType="INTEGER" property="channelId"/>
+        <result column="channel_id" javaType="java.lang.Integer" jdbcType="INTEGER" property="channelId"/>
         <result column="peer_name" javaType="java.lang.String" jdbcType="VARCHAR" property="peerName"/>
         <result column="peer_port" javaType="java.lang.Integer" jdbcType="VARCHAR" property="peerPort"/>
         <result column="peer_ip" javaType="java.lang.String" jdbcType="VARCHAR" property="peerIp"/>

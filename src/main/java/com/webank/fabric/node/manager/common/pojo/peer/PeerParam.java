@@ -27,7 +27,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 public class PeerParam extends BaseQueryParam {
     private Integer channelId;
-    private String peerId;
-    private Integer peerAddress;
+    private Integer peerId;
+    private Integer peerUrl;
     private String peerName;
 }
