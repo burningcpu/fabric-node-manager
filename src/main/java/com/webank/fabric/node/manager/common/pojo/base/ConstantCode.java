@@ -52,6 +52,8 @@ public class ConstantCode {
 
     public static final RetCode FRONT_EXISTS = RetCode.mark(204008, "front already exists");
 
+    public static final RetCode INVALID_FRONT_ID = RetCode.mark(204009, "invalid front id");
+
 
     /* param exception */
     public static final RetCode PARAM_EXCEPTION = RetCode.mark(404000, "param exception");

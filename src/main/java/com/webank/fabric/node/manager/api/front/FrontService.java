@@ -14,14 +14,12 @@ import com.webank.fabric.node.manager.common.pojo.peer.PeerDO;
 import com.webank.fabric.node.manager.common.pojo.peer.PeerDTO;
 import com.webank.fabric.node.manager.common.utils.NodeMgrUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * service of front.
@@ -56,7 +54,7 @@ public class FrontService {
         FrontParam param = FrontParam.builder().frontIp(frontIp).frontPort(frontPort).build();
         int count = frontMapper.getCount(param);
         if (count > 0) {
-            log.error("font ip:{} port:{} already exists",frontIp,frontPort);
+            log.error("font ip:{} port:{} already exists", frontIp, frontPort);
             throw new NodeMgrException(ConstantCode.FRONT_EXISTS);
         }
         //save front
@@ -108,7 +106,7 @@ public class FrontService {
         Set<String> peerNameSet = peerDtoMap.keySet();
         for (String peerName : peerNameSet) {
             String peerIp = peerDtoMap.get(peerName).getPeerIp();
-            if(StringUtils.isBlank(peerIp))
+            if (StringUtils.isBlank(peerIp))
                 continue;
 
             int peerPort = peerDtoMap.get(peerName).getPeerPort();
@@ -118,5 +116,43 @@ public class FrontService {
             }
         }
         return null;
+    }
+
+    /**
+     * get front count
+     */
+    public int getFrontCount(FrontParam param) {
+        Integer count = frontMapper.getCount(param);
+        return count == null ? 0 : count;
+    }
+
+    /**
+     * get front list
+     */
+    public List<FrontDO> getFrontList(FrontParam param) {
+        return frontMapper.getList(param);
+    }
+
+
+    /**
+     * remove front
+     */
+    public void removeFront(int frontId) {
+        //check frontId
+        FrontParam param = new FrontParam();
+        param.setFrontId(frontId);
+        int count = getFrontCount(param);
+        if (count == 0) {
+            throw new NodeMgrException(ConstantCode.INVALID_FRONT_ID);
+        }
+
+        //remove front
+        frontMapper.remove(frontId);
+        //remove map
+        frontChannelService.removeByFrontId(frontId);
+        //reset group list  TODO 需要加上这个逻辑
+        //resetGroupListTask.asyncResetGroupList();
+        //clear cache
+        frontChannelService.clearMapList();
     }
 }

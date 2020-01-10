@@ -72,4 +72,15 @@ public class FrontChannelService {
         }
         return mapList;
     }
+
+    /**
+     * remove by frontId
+     */
+    public void removeByFrontId(int frontId) {
+        if (frontId == 0) {
+            return;
+        }
+        //remove by frontId
+        frontChannelMapper.removeByFrontId(frontId);
+    }
 }

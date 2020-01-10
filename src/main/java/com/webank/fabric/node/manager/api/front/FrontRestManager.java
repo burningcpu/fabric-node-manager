@@ -13,7 +13,9 @@ import com.webank.fabric.node.manager.common.utils.BeanUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.hyperledger.fabric.protos.common.Common;
+import org.hyperledger.fabric.protos.peer.FabricTransaction;
 import org.hyperledger.fabric.sdk.BlockInfo;
+import org.hyperledger.fabric.sdk.TransactionInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Repository;
@@ -37,6 +39,7 @@ public class FrontRestManager {
     public static final String URI_GET_CHANNEL_BLOCK_NUMBER = "sdk/channelBlockNumber";
     public static final String URI_BLOCK_BY_NUMBER = "sdk/queryBlockByNumber/%1d";
     public static final String URI_BLOCK_BY_HASH = "sdk/queryBlockByHash/%1s";
+    public static final String URI_GET_TRANSACTION_BY_ID = "sdk/getTransactionByTxId/%1s";
     @Autowired
     private RestTemplate restTemplate;
     @Autowired
@@ -93,7 +96,25 @@ public class FrontRestManager {
 
 
     /**
-     * get transaction.
+     * get transaction by transactionId.
+     */
+    public TransactionInfo getTransactionById(int channelId, String transactionId) throws InvalidProtocolBufferException {
+        log.debug("start getTransactionById. channelId:{} transactionId:{} ", channelId, transactionId);
+        String uri = String.format(URI_GET_TRANSACTION_BY_ID, transactionId);
+        byte[] transactionByteArray = getForEntity(channelId, uri, byte[].class);
+        if (null == transactionByteArray)
+            return null;
+
+
+        FabricTransaction.ProcessedTransaction pt = FabricTransaction.ProcessedTransaction.parseFrom(transactionByteArray);
+        TransactionInfo transactionInfo = BeanUtils.getInstanceByReflection(TransactionInfo.class, Arrays.asList(transactionId, pt));
+        log.debug("end getTransactionById.");
+        return transactionInfo;
+    }
+
+
+    /**
+     * get block by number.
      */
     public BlockInfo getBlockByNumber(int channelId, BigInteger blockNumber) throws InvalidProtocolBufferException {
         log.debug("start getBlockByNumber. channelId:{} blockNumber:{} ", channelId, blockNumber);
@@ -106,7 +127,7 @@ public class FrontRestManager {
 
 
     /**
-     * get transaction.
+     * get block by hash.
      */
     public BlockInfo getBlockByHash(int channelId, String blockHash) throws InvalidProtocolBufferException {
         log.debug("start getBlockByHash. channelId:{}  blockHash:{}", channelId, blockHash);

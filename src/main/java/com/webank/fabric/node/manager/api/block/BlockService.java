@@ -47,9 +47,6 @@ public class BlockService {
     private TransactionService transactionService;
     private static final Long SAVE_TRANS_SLEEP_TIME = 5L;
 
-    public BlockService() {
-    }
-
 
     /**
      * get block from chain by channelId
@@ -134,9 +131,7 @@ public class BlockService {
         // save block info
         BlockInfoDO blockInfoDO = chainBlock2BlockInfoDO(blockInfo);
         addBlockInfo(blockInfoDO, channelId);
-
         for (BlockInfo.EnvelopeInfo envelopeInfo : blockInfo.getEnvelopeInfos()) {
-
             transactionService.saveTransInfo(channelId, blockInfoDO.getBlockNumber(), envelopeInfo);
             try {
                 Thread.sleep(SAVE_TRANS_SLEEP_TIME);

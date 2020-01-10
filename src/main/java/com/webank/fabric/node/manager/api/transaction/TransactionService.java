@@ -1,6 +1,9 @@
 package com.webank.fabric.node.manager.api.transaction;
 
 import com.alibaba.fastjson.JSON;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.webank.fabric.node.manager.api.front.FrontRestManager;
 import com.webank.fabric.node.manager.common.enums.TableName;
 import com.webank.fabric.node.manager.common.exception.NodeMgrException;
 import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
@@ -8,13 +11,16 @@ import com.webank.fabric.node.manager.common.pojo.transaction.MinMaxBlock;
 import com.webank.fabric.node.manager.common.pojo.transaction.TransListParam;
 import com.webank.fabric.node.manager.common.pojo.transaction.TransactionDO;
 import lombok.extern.slf4j.Slf4j;
+import org.hyperledger.fabric.protos.common.Common;
 import org.hyperledger.fabric.sdk.BlockInfo;
+import org.hyperledger.fabric.sdk.TransactionInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,35 +32,44 @@ import static org.hyperledger.fabric.sdk.BlockInfo.EnvelopeType.TRANSACTION_ENVE
 @Slf4j
 @Service
 public class TransactionService {
-
-
     @Autowired
     private TransactionMapper transactionMapper;
+    @Autowired
+    private FrontRestManager frontRestManager;
 
 
     /**
      * save transaction info.
      */
     public void saveTransInfo(int channelId, BigInteger blockNumber, BlockInfo.EnvelopeInfo envelopeInfo) {
-        // save transaction to db
+
+        TransactionDO trans = getTransactionDO(envelopeInfo);
+        if (trans != null) {
+            trans.setBlockNumber(blockNumber);
+            String tableName = TableName.TRANS.getTableName(channelId);
+            transactionMapper.add(tableName, trans);
+        }
+    }
+
+    /**
+     * build TransactionDO from BlockInfo.EnvelopeInfo.
+     */
+    private TransactionDO getTransactionDO(BlockInfo.EnvelopeInfo envelopeInfo) {
+        TransactionDO trans = null;
         if (envelopeInfo.getType() == TRANSACTION_ENVELOPE) {
             BlockInfo.TransactionEnvelopeInfo transactionEnvelopeInfo = (BlockInfo.TransactionEnvelopeInfo) envelopeInfo;
 
-            TransactionDO trans = TransactionDO.builder()
+
+            trans = TransactionDO.builder()
                     .txId(envelopeInfo.getTransactionID())
-                    .blockNumber(blockNumber)
                     .creator(envelopeInfo.getCreator().getId().substring(0, 60))
                     .envelopeType(envelopeInfo.getType().toString())
                     .actionCount(transactionEnvelopeInfo.getTransactionActionInfoCount())
                     .transTimestamp(LocalDateTime.from(LocalDateTime.ofInstant(envelopeInfo.getTimestamp().toInstant(), ZoneId.systemDefault())))
                     .build();
-
-            String tableName = TableName.TRANS.getTableName(channelId);
-            transactionMapper.add(tableName, trans);
         }
-
+        return trans;
     }
-
 
     /**
      * add trans hash info.
@@ -68,10 +83,10 @@ public class TransactionService {
     /**
      * query trans list.
      */
-    public List<TransactionDO> queryTransList(int groupId, TransListParam param)
+    public List<TransactionDO> queryTransList(int channelId, TransListParam param)
             throws NodeMgrException {
         log.debug("start queryTransList. TransListParam:{}", JSON.toJSONString(param));
-        String tableName = TableName.TRANS.getTableName(groupId);
+        String tableName = TableName.TRANS.getTableName(channelId);
         List<TransactionDO> listOfTran = null;
         try {
             listOfTran = transactionMapper.getList(tableName, param);
@@ -87,10 +102,10 @@ public class TransactionService {
     /**
      * query count of trans hash.
      */
-    public Integer queryCountOfTran(int groupId, TransListParam queryParam)
+    public Integer queryCountOfTran(int channelId, TransListParam queryParam)
             throws NodeMgrException {
         log.debug("start queryCountOfTran. queryParam:{}", JSON.toJSONString(queryParam));
-        String tableName = TableName.TRANS.getTableName(groupId);
+        String tableName = TableName.TRANS.getTableName(channelId);
         try {
             Integer count = transactionMapper.getCount(tableName, queryParam);
             log.info("end queryCountOfTran. queryParam:{} count:{}", JSON.toJSONString(queryParam),
@@ -105,10 +120,10 @@ public class TransactionService {
     /**
      * query count of trans by minus max and min trans_number
      */
-    public Integer queryCountOfTranByMinus(int groupId)
+    public Integer queryCountOfTranByMinus(int channelId)
             throws NodeMgrException {
         log.debug("start queryCountOfTranByMinus.");
-        String tableName = TableName.TRANS.getTableName(groupId);
+        String tableName = TableName.TRANS.getTableName(channelId);
         try {
             Integer count = transactionMapper.getCountByMinMax(tableName);
             log.info("end queryCountOfTranByMinus. count:{}", count);
@@ -126,9 +141,9 @@ public class TransactionService {
     /**
      * query min and max block number.
      */
-    public List<MinMaxBlock> queryMinMaxBlock(int groupId) throws NodeMgrException {
+    public List<MinMaxBlock> queryMinMaxBlock(int channelId) throws NodeMgrException {
         log.debug("start queryMinMaxBlock");
-        String tableName = TableName.TRANS.getTableName(groupId);
+        String tableName = TableName.TRANS.getTableName(channelId);
         try {
             List<MinMaxBlock> listMinMaxBlock = transactionMapper.queryMinMaxBlock(tableName);
             int listSize = Optional.ofNullable(listMinMaxBlock).map(list -> list.size()).orElse(0);
@@ -143,23 +158,47 @@ public class TransactionService {
     /**
      * Remove trans info.
      */
-    public Integer remove(Integer groupId, Integer subTransNum) {
-        String tableName = TableName.TRANS.getTableName(groupId);
-        Integer affectRow = transactionMapper.remove(tableName, subTransNum, groupId);
+    public Integer remove(Integer channelId, Integer subTransNum) {
+        String tableName = TableName.TRANS.getTableName(channelId);
+        Integer affectRow = transactionMapper.remove(tableName, subTransNum, channelId);
         return affectRow;
     }
 
-
-    /**
-     * get tbTransInfo from chain
-     */
-//    public List<TransactionDO> getTransListFromChain(Integer groupId, String transHash,
+//    /**
+//     * request front for transaction by hash.
+//     */
+//    public TbTransHash getTbTransFromFrontById(Integer channelId, String txId)
+//            throws NodeMgrException, InvalidProtocolBufferException {
+//        log.info("start getTransFromFrontByHash. channelId:{}  txId:{}", channelId, txId);
+//
+//        TransactionInfo transOnChain = frontRestManager.getTransactionById(channelId, txId);
+//
+//        Common.Envelope envelopeInfo = transOnChain.getEnvelope();
+//        envelopeInfo.
+//        ByteString str = envelopeInfo.getPayload();
+//        BlockInfo.EnvelopeInfo.
+//        TransactionDO trans = getTransactionDO(envelopeInfo);
+//        TransactionDO transactionDO = null;
+//        if (trans != null) {
+//            transactionDO = TransactionDO.builder()
+//                    .transTimestamp(trans.getProcessedTransaction().)
+//                    .build();
+//        }
+//        log.info("end getTransFromFrontByHash. tbTransHash:{}", JSON.toJSONString(tbTransHash));
+//        return tbTransHash;
+//    }
+//
+//
+//    /**
+//     * get tbTransInfo from chain
+//     */
+//    public List<TbTransHash> getTransListFromChain(Integer channelId, String txId,
 //                                                   BigInteger blockNumber) {
 //        log.debug("start getTransListFromChain.");
-//        List<TransactionDO> transList = new ArrayList<>();
-//        //find by transHash
-//        if (transHash != null) {
-//            TransactionDO tbTransHash = getTbTransFromFrontByHash(groupId, transHash);
+//        List<TbTransHash> transList = new ArrayList<>();
+//        //find by txId
+//        if (txId != null) {
+//            TbTransHash tbTransHash = getTbTransFromFrontByHash(channelId, txId);
 //            if (tbTransHash != null) {
 //                transList.add(tbTransHash);
 //            }
@@ -167,10 +206,10 @@ public class TransactionService {
 //        //find trans by block number
 //        if (transList.size() == 0 && blockNumber != null) {
 //            List<TransactionInfo> transInBlock = frontInterface
-//                    .getTransByBlockNumber(groupId, blockNumber);
-//            if(transInBlock != null && transInBlock.size() != 0) {
+//                    .getTransByBlockNumber(channelId, blockNumber);
+//            if (transInBlock != null && transInBlock.size() != 0) {
 //                transInBlock.stream().forEach(tran -> {
-//                    TransactionDO tbTransHash = new TransactionDO(tran.getHash(), tran.getFrom(),
+//                    TbTransHash tbTransHash = new TbTransHash(tran.getHash(), tran.getFrom(),
 //                            tran.getTo(), tran.getBlockNumber(),
 //                            null);
 //                    transList.add(tbTransHash);
@@ -180,37 +219,4 @@ public class TransactionService {
 //        log.debug("end getTransListFromChain.");
 //        return transList;
 //    }
-
-
-    /**
-     * request front for transaction by hash.
-     */
-   /* public TransactionDO getTbTransFromFrontByHash(Integer groupId, String transHash)
-            throws NodeMgrException {
-        log.info("start getTransFromFrontByHash. groupId:{}  transaction:{}", groupId,
-                transHash);
-        TransactionInfo trans = frontInterface.getTransaction(groupId, transHash);
-        TransactionDO tbTransHash = null;
-        if (trans != null) {
-            tbTransHash = new TransactionDO(transHash, trans.getFrom(), trans.getTo(),
-                    trans.getBlockNumber(), null);
-        }
-        log.info("end getTransFromFrontByHash. tbTransHash:{}", JSON.toJSONString(tbTransHash));
-        return tbTransHash;
-    }
-
-    *//**
-     * get transaction receipt
-     *//*
-    public TransReceipt getTransReceipt(int groupId, String transHash) {
-        return frontInterface.getTransReceipt(groupId, transHash);
-    }
-
-
-    *//**
-     * get transaction info
-     *//*
-    public TransactionInfo getTransaction(int groupId, String transHash) {
-        return frontInterface.getTransaction(groupId, transHash);
-    }*/
 }
