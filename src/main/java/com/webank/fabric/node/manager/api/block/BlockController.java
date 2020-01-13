@@ -73,7 +73,7 @@ public class BlockController {
             if (blockNumber != null) {
                 log.debug("did not find block, request from front. blockNumber:{} channelId:{}",
                         blockNumber, channelId);
-                blockInfo = blockService.getBlockFromFrontByNumber(channelId, blockNumber);
+                blockInfo = blockService.getBlockOnChainByNumber(channelId, blockNumber);
             } else if (StringUtils.isNotBlank(pkHash)) {
                 log.debug(
                         "did not find block,request from front. pkHash:{} channelId:{}",
@@ -111,7 +111,7 @@ public class BlockController {
         log.info("start getBlockByNumber startTime:{} channelId:{} blockNumber:{}",
                 startTime.toEpochMilli(), channelId, blockNumber);
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
-        Object blockInfo = blockService.getBlockFromFrontByNumber(channelId, blockNumber);
+        Object blockInfo = blockService.getBlockOnChainByNumber(channelId, blockNumber);
         baseResponse.setData(blockInfo);
         log.info("end getBlockByNumber useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(baseResponse));

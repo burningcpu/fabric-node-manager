@@ -1,25 +1,20 @@
 package com.webank.fabric.node.manager.api.transaction;
 
 import com.alibaba.fastjson.JSON;
-import com.google.protobuf.ByteString;
+import com.google.common.collect.Lists;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.webank.fabric.node.manager.api.front.FrontRestManager;
 import com.webank.fabric.node.manager.common.enums.TableName;
 import com.webank.fabric.node.manager.common.exception.NodeMgrException;
 import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
-import com.webank.fabric.node.manager.common.pojo.transaction.MinMaxBlock;
-import com.webank.fabric.node.manager.common.pojo.transaction.TransListParam;
-import com.webank.fabric.node.manager.common.pojo.transaction.TransactionDO;
+import com.webank.fabric.node.manager.common.pojo.transaction.*;
+import com.webank.fabric.node.manager.common.utils.TimeUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.hyperledger.fabric.protos.common.Common;
 import org.hyperledger.fabric.sdk.BlockInfo;
-import org.hyperledger.fabric.sdk.TransactionInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -52,7 +47,7 @@ public class TransactionService {
     }
 
     /**
-     * build TransactionDO from BlockInfo.EnvelopeInfo.
+     * get TransactionDO from BlockInfo.EnvelopeInfo.
      */
     private TransactionDO getTransactionDO(BlockInfo.EnvelopeInfo envelopeInfo) {
         TransactionDO trans = null;
@@ -65,18 +60,10 @@ public class TransactionService {
                     .creator(envelopeInfo.getCreator().getId().substring(0, 60))
                     .envelopeType(envelopeInfo.getType().toString())
                     .actionCount(transactionEnvelopeInfo.getTransactionActionInfoCount())
-                    .transTimestamp(LocalDateTime.from(LocalDateTime.ofInstant(envelopeInfo.getTimestamp().toInstant(), ZoneId.systemDefault())))
+                    .transTimestamp(TimeUtils.LocalDateTimeFromDate(envelopeInfo.getTimestamp()))
                     .build();
         }
         return trans;
-    }
-
-    /**
-     * add trans hash info.
-     */
-    private void saveTransactionActionInfo(int channelId, TransactionDO trans) throws NodeMgrException {
-        String tableName = TableName.TRANS.getTableName(channelId);
-        transactionMapper.add(tableName, trans);
     }
 
 
@@ -97,24 +84,6 @@ public class TransactionService {
 
         log.debug("end queryBlockList. listOfTran:{}", JSON.toJSONString(listOfTran));
         return listOfTran;
-    }
-
-    /**
-     * query count of trans hash.
-     */
-    public Integer queryCountOfTran(int channelId, TransListParam queryParam)
-            throws NodeMgrException {
-        log.debug("start queryCountOfTran. queryParam:{}", JSON.toJSONString(queryParam));
-        String tableName = TableName.TRANS.getTableName(channelId);
-        try {
-            Integer count = transactionMapper.getCount(tableName, queryParam);
-            log.info("end queryCountOfTran. queryParam:{} count:{}", JSON.toJSONString(queryParam),
-                    count);
-            return count;
-        } catch (RuntimeException ex) {
-            log.error("fail queryCountOfTran. queryParam:{}", JSON.toJSONString(queryParam), ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
-        }
     }
 
     /**
@@ -164,31 +133,83 @@ public class TransactionService {
         return affectRow;
     }
 
-//    /**
-//     * request front for transaction by hash.
-//     */
-//    public TbTransHash getTbTransFromFrontById(Integer channelId, String txId)
-//            throws NodeMgrException, InvalidProtocolBufferException {
-//        log.info("start getTransFromFrontByHash. channelId:{}  txId:{}", channelId, txId);
-//
-//        TransactionInfo transOnChain = frontRestManager.getTransactionById(channelId, txId);
-//
-//        Common.Envelope envelopeInfo = transOnChain.getEnvelope();
-//        envelopeInfo.getPayload();
-//        ByteString str = envelopeInfo.getPayload();
-//        BlockInfo.EnvelopeInfo.
-//        TransactionDO trans = getTransactionDO(envelopeInfo);
-//        TransactionDO transactionDO = null;
-//        if (trans != null) {
-//            transactionDO = TransactionDO.builder()
-//                    .transTimestamp(trans.getProcessedTransaction().)
-//                    .build();
-//        }
-//        log.info("end getTransFromFrontByHash. tbTransHash:{}", JSON.toJSONString(tbTransHash));
-//        return tbTransHash;
-//    }
-//
-//
+    /**
+     * request front for transaction by hash.
+     */
+    public TransactionInfoVO getTransOnChainByTxId(Integer channelId, String txId)
+            throws NodeMgrException, InvalidProtocolBufferException {
+        log.info("start getTransOnChainByTxId. channelId:{}  txId:{}", channelId, txId);
+
+        BlockInfo blockOnChain = frontRestManager.getBlockByTransactionId(channelId, txId);
+        if (blockOnChain == null)
+            return null;
+
+        for (BlockInfo.EnvelopeInfo envelopeInfo : blockOnChain.getEnvelopeInfos()) {
+            if (!txId.equals(envelopeInfo.getTransactionID()))
+                continue;
+
+            //convert BlockInfo.EnvelopeInfo to TransactionInfoVO
+            TransactionInfoVO transactionInfoVO = getTransactionInfoVO(envelopeInfo);
+            transactionInfoVO.setBlockNumber(blockOnChain.getBlockNumber());
+
+            log.info("end getTransOnChainByTxId. transactionInfoVO:{}", JSON.toJSONString(transactionInfoVO));
+            return transactionInfoVO;
+        }
+        return null;
+    }
+
+    /**
+     * get TransactionInfoVO from BlockInfo.EnvelopeInfo.
+     */
+    private TransactionInfoVO getTransactionInfoVO(BlockInfo.EnvelopeInfo envelopeInfo) {
+        TransactionInfoVO transactionInfoVO = TransactionInfoVO.builder()
+                .txId(envelopeInfo.getTransactionID())
+                .envelopeType(envelopeInfo.getType().name())
+                .channel(envelopeInfo.getChannelId())
+                .creator(envelopeInfo.getCreator().getId())
+                .timestamp(TimeUtils.LocalDateTimeFromDate(envelopeInfo.getTimestamp()))
+                .transactionActionList(getTransactionActionList(envelopeInfo))
+                .build();
+        return transactionInfoVO;
+    }
+
+    /**
+     * get List<TransactionInfoVO> from BlockInfo.EnvelopeInfo.
+     */
+    private List<TransactionActionVO> getTransactionActionList(BlockInfo.EnvelopeInfo envelopeInfo) {
+        if (envelopeInfo.getType() != TRANSACTION_ENVELOPE)
+            return null;
+
+        BlockInfo.TransactionEnvelopeInfo transactionEnvelopeInfo = (BlockInfo.TransactionEnvelopeInfo) envelopeInfo;
+        List<TransactionActionVO> actionList = new ArrayList<>(transactionEnvelopeInfo.getTransactionActionInfoCount());
+        for (BlockInfo.TransactionEnvelopeInfo.TransactionActionInfo actionInfo : transactionEnvelopeInfo.getTransactionActionInfos()) {
+            actionList.add(getTransactionActionVO(actionInfo));
+        }
+
+        return actionList;
+    }
+
+    /**
+     * Copy the attribute value of BlockInfo.TransactionEnvelopeInfo.TransactionActionInfo to TransactionActionVO.
+     */
+    private TransactionActionVO getTransactionActionVO(BlockInfo.TransactionEnvelopeInfo.TransactionActionInfo action) {
+        List<Object> argList = Lists.newLinkedList();
+        for (int i = 0; i < action.getChaincodeInputArgsCount(); i++) {
+            argList.add(new String(action.getChaincodeInputArgs(i)));
+        }
+        TransactionActionVO actionVO = TransactionActionVO
+                .builder()
+                .chainCodeIDName(action.getChaincodeIDName())
+                .chainCodeIDPath(action.getChaincodeIDPath())
+                .chainCodeIDVersion(action.getChaincodeIDVersion())
+                .chainCodeInputArgs(argList)
+                .responseMessage(action.getResponseMessage())
+                .responseStatus(action.getResponseStatus())
+                .build();
+        return actionVO;
+    }
+
+
 //    /**
 //     * get tbTransInfo from chain
 //     */

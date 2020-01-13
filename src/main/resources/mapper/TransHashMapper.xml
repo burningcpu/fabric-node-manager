@@ -27,7 +27,7 @@
     <select id="getCount" parameterType="com.webank.fabric.node.manager.common.pojo.transaction.TransListParam"
             resultType="java.lang.Integer">
         select count(txId) from ${tableName} where 1=1
-        <if test="param.transHash != null and param.transHash != ''">
+        <if test="param.txId != null and param.txId != ''">
             and txId = #{param.txId}
         </if>
         <if test="param.blockNumber != null">

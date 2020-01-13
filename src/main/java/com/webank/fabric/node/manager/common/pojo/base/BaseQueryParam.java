@@ -16,6 +16,7 @@
 package com.webank.fabric.node.manager.common.pojo.base;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

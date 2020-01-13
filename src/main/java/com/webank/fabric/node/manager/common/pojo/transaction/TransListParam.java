@@ -16,10 +16,7 @@
 package com.webank.fabric.node.manager.common.pojo.transaction;
 
 import com.webank.fabric.node.manager.common.pojo.base.BaseQueryParam;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.math.BigInteger;
 
