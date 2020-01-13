@@ -1,6 +1,6 @@
 #server config
 server:
-  port: 6002
+  port: 8080
   servlet:
     context-path: /Fabric-Node-Manager
 

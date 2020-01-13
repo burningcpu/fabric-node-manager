@@ -174,7 +174,7 @@ public class TransactionService {
 //        TransactionInfo transOnChain = frontRestManager.getTransactionById(channelId, txId);
 //
 //        Common.Envelope envelopeInfo = transOnChain.getEnvelope();
-//        envelopeInfo.
+//        envelopeInfo.getPayload();
 //        ByteString str = envelopeInfo.getPayload();
 //        BlockInfo.EnvelopeInfo.
 //        TransactionDO trans = getTransactionDO(envelopeInfo);

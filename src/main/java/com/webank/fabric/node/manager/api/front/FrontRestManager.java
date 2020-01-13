@@ -39,7 +39,7 @@ public class FrontRestManager {
     public static final String URI_GET_CHANNEL_BLOCK_NUMBER = "sdk/channelBlockNumber";
     public static final String URI_BLOCK_BY_NUMBER = "sdk/queryBlockByNumber/%1d";
     public static final String URI_BLOCK_BY_HASH = "sdk/queryBlockByHash/%1s";
-    public static final String URI_GET_TRANSACTION_BY_ID = "sdk/getTransactionByTxId/%1s";
+    public static final String URI_GET_TRANSACTION_BY_ID = "sdk/transactionInfo/%1s";
     @Autowired
     private RestTemplate restTemplate;
     @Autowired
