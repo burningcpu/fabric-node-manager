@@ -39,7 +39,7 @@ public interface BlockMapper {
     /**
      * get block count by max minux min
      */
-    int getBlockCountByMinMax(@Param("tableName") String tableName);
+    Integer getBlockCountByMinMax(@Param("tableName") String tableName);
 
     /**
      * Delete block height.

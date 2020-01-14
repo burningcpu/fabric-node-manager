@@ -2,7 +2,6 @@ package com.webank.fabric.node.manager.api.block;
 
 import com.alibaba.fastjson.JSON;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.webank.fabric.node.manager.scheduler.ScheduleProperties;
 import com.webank.fabric.node.manager.api.front.FrontRestManager;
 import com.webank.fabric.node.manager.api.transaction.TransactionService;
 import com.webank.fabric.node.manager.common.enums.TableName;
@@ -11,6 +10,7 @@ import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
 import com.webank.fabric.node.manager.common.pojo.block.BlockInfoDO;
 import com.webank.fabric.node.manager.common.pojo.block.BlockInfoVO;
 import com.webank.fabric.node.manager.common.pojo.block.BlockListParam;
+import com.webank.fabric.node.manager.common.pojo.properties.ScheduleProperties;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Hex;
 import org.hyperledger.fabric.sdk.BlockInfo;
@@ -261,10 +261,10 @@ public class BlockService {
         return frontRestManager.getBlockByHash(channelId, pkHash);
     }
 
-    public int queryCountOfBlockByMinus(Integer groupId) {
+    public Integer queryCountOfBlockByMinus(Integer groupId) {
         log.debug("start queryCountOfBlockByMinus groupId:{}", groupId);
         try {
-            int count = blockmapper
+            Integer count = blockmapper
                     .getBlockCountByMinMax(TableName.BLOCK.getTableName(groupId));
             log.info("end queryCountOfBlockByMinus groupId:{} count:{}", groupId, count);
             return count;

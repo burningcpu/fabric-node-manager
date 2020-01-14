@@ -37,11 +37,13 @@ public class FrontController {
      */
     @PostMapping("/new")
     @ApiOperation(value = "new", notes = "new front")
-    public RspFrontVO newFront(@RequestBody @Valid ReqFrontVO frontInfo) {
+    public BaseResponse newFront(@RequestBody @Valid ReqFrontVO frontInfo) {
         FrontDO frontDO = frontService.newFront(frontInfo);
         RspFrontVO rsp = new RspFrontVO();
         BeanUtils.copyProperties(frontDO, rsp);
-        return rsp;
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        baseResponse.setData(rsp);
+        return baseResponse;
     }
 
     /**

@@ -54,7 +54,7 @@ public class BlockController {
                         + "pkHash:{} blockNumber:{}",
                 startTime.toEpochMilli(), channelId,
                 pageNumber, pageSize, pkHash, blockNumber);
-        int count;
+        Integer count;
         // if query all block's count
         if (StringUtils.isEmpty(pkHash) && blockNumber == null) {
             count = blockService.queryCountOfBlockByMinus(channelId);
