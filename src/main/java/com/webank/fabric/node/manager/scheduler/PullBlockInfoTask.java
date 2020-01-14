@@ -18,6 +18,7 @@ import com.webank.fabric.node.manager.api.channel.FrontChannelService;
 import com.webank.fabric.node.manager.common.pojo.channel.FrontChannelUnionDO;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -37,7 +38,7 @@ public class PullBlockInfoTask {
     @Autowired
     private FrontChannelService frontChannelService;
 
-    //@Scheduled(fixedDelayString = "${schedule.pullBlockTaskFixedDelay}")
+    @Scheduled(fixedDelayString = "${schedule.pullBlockTaskFixedDelay}")
     public void taskStart() {
         pullBlockStart();
     }

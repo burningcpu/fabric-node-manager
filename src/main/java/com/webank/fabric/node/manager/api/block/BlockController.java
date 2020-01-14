@@ -61,7 +61,7 @@ public class BlockController {
         } else {
             count = blockService.queryCountOfBlock(channelId, pkHash, blockNumber);
         }
-        if (count > 0) {
+        if (count != null && count > 0) {
             Integer start = Optional.ofNullable(pageNumber).map(page -> (page - 1) * pageSize)
                     .orElse(null);
             BlockListParam queryParam = new BlockListParam(start, pageSize, pkHash,

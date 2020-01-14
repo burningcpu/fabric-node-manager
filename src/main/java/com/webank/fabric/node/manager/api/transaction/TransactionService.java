@@ -195,7 +195,7 @@ public class TransactionService {
         List<TransactionActionVO> actionList = getTransactionActionList(envelopeInfo);
         TransactionInfoVO transactionInfoVO = TransactionInfoVO.builder()
                 .txId(envelopeInfo.getTransactionID())
-                .envelopeType(envelopeInfo.getType().name())
+                .envelopeType(envelopeInfo.getType().toString())
                 .transTimestamp(TimeUtils.LocalDateTimeFromDate(envelopeInfo.getTimestamp()))
                 .transactionActionList(actionList)
                 .actionCount(actionList.size())
