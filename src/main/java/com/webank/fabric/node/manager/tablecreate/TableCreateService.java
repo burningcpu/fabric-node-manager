@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.webank.fabric.node.manager.accessory.tablecreate;
+package com.webank.fabric.node.manager.tablecreate;
 
 import com.webank.fabric.node.manager.common.enums.TableName;
 import com.webank.fabric.node.manager.common.exception.NodeMgrException;

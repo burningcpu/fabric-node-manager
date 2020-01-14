@@ -14,7 +14,7 @@
 package scheduler;
 
 import com.webank.fabric.node.manager.Application;
-import com.webank.fabric.node.manager.accessory.scheduler.PullBlockInfoTask;
+import com.webank.fabric.node.manager.scheduler.PullBlockInfoTask;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

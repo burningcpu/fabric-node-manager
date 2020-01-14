@@ -1,7 +1,7 @@
 package com.webank.fabric.node.manager.api.channel;
 
 import com.alibaba.fastjson.JSON;
-import com.webank.fabric.node.manager.accessory.tablecreate.TableCreateService;
+import com.webank.fabric.node.manager.tablecreate.TableCreateService;
 import com.webank.fabric.node.manager.common.exception.NodeMgrException;
 import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
 import com.webank.fabric.node.manager.common.pojo.channel.ChannelDO;

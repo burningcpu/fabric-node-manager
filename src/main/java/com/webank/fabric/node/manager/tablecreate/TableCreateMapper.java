@@ -1,4 +1,4 @@
-package com.webank.fabric.node.manager.accessory.tablecreate;
+package com.webank.fabric.node.manager.tablecreate;
 
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;

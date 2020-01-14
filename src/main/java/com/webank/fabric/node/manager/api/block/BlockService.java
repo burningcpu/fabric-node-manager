@@ -2,7 +2,7 @@ package com.webank.fabric.node.manager.api.block;
 
 import com.alibaba.fastjson.JSON;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.webank.fabric.node.manager.accessory.scheduler.ScheduleProperties;
+import com.webank.fabric.node.manager.scheduler.ScheduleProperties;
 import com.webank.fabric.node.manager.api.front.FrontRestManager;
 import com.webank.fabric.node.manager.api.transaction.TransactionService;
 import com.webank.fabric.node.manager.common.enums.TableName;

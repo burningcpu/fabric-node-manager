@@ -1,4 +1,4 @@
-package com.webank.fabric.node.manager.accessory.scheduler;
+package com.webank.fabric.node.manager.scheduler;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

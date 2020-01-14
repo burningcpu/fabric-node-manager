@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.fabric.node.manager.accessory.scheduler;
+package com.webank.fabric.node.manager.scheduler;
 
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;

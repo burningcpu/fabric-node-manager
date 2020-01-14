@@ -11,14 +11,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.webank.fabric.node.manager.accessory.scheduler;
+package com.webank.fabric.node.manager.scheduler;
 
 import com.webank.fabric.node.manager.api.block.BlockService;
 import com.webank.fabric.node.manager.api.channel.FrontChannelService;
 import com.webank.fabric.node.manager.common.pojo.channel.FrontChannelUnionDO;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
