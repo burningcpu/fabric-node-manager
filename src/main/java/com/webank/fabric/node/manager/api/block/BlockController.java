@@ -8,6 +8,7 @@ import com.webank.fabric.node.manager.common.pojo.base.BasePageResponse;
 import com.webank.fabric.node.manager.common.pojo.base.BaseResponse;
 import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
 import com.webank.fabric.node.manager.common.pojo.block.BlockInfoDO;
+import com.webank.fabric.node.manager.common.pojo.block.BlockInfoVO;
 import com.webank.fabric.node.manager.common.pojo.block.BlockListParam;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -111,7 +112,7 @@ public class BlockController {
         log.info("start getBlockByNumber startTime:{} channelId:{} blockNumber:{}",
                 startTime.toEpochMilli(), channelId, blockNumber);
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
-        Object blockInfo = blockService.getBlockOnChainByNumber(channelId, blockNumber);
+        BlockInfoVO blockInfo = blockService.getBlockInfoVOOnChainByNumber(channelId, blockNumber);
         baseResponse.setData(blockInfo);
         log.info("end getBlockByNumber useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(baseResponse));

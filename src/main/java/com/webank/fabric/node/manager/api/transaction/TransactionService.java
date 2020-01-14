@@ -57,7 +57,6 @@ public class TransactionService {
 
             trans = TransactionDO.builder()
                     .txId(envelopeInfo.getTransactionID())
-                    .creator(envelopeInfo.getCreator().getId().substring(0, 60))
                     .envelopeType(envelopeInfo.getType().toString())
                     .actionCount(transactionEnvelopeInfo.getTransactionActionInfoCount())
                     .transTimestamp(TimeUtils.LocalDateTimeFromDate(envelopeInfo.getTimestamp()))
@@ -150,7 +149,7 @@ public class TransactionService {
 
             //convert BlockInfo.EnvelopeInfo to TransactionInfoVO
             TransactionInfoVO transactionInfoVO = getTransactionInfoVO(envelopeInfo);
-            transactionInfoVO.setBlockNumber(blockOnChain.getBlockNumber());
+            transactionInfoVO.setBlockNumber(BigInteger.valueOf(blockOnChain.getBlockNumber()));
 
             log.info("end getTransOnChainByTxId. transactionInfoVO:{}", JSON.toJSONString(transactionInfoVO));
             return transactionInfoVO;
@@ -159,17 +158,50 @@ public class TransactionService {
     }
 
     /**
+     * request front for transaction list by blockNumber.
+     */
+    public List<TransactionInfoVO> getTransListOnChainByBlockNumber(Integer channelId, BigInteger blockNumber)
+            throws NodeMgrException, InvalidProtocolBufferException {
+        log.info("start getTransOnChainByTxId. channelId:{}  blockNumber:{}", channelId, blockNumber);
+        BlockInfo blockOnChain = frontRestManager.getBlockByNumber(channelId, blockNumber);
+        List<TransactionInfoVO> transactionList = getTransactionInfoVOListByBlockInfo(blockOnChain);
+        log.info("end getTransOnChainByTxId. transactionList:{}", JSON.toJSONString(transactionList));
+        return transactionList;
+    }
+
+    /**
+     * get List<TransactionInfoVO> from BlockInfo.
+     */
+    public List<TransactionInfoVO> getTransactionInfoVOListByBlockInfo(BlockInfo blockOnChain) {
+        if (blockOnChain == null)
+            return Lists.newArrayList();
+
+        List<TransactionInfoVO> transactionList = new ArrayList<>(blockOnChain.getEnvelopeCount());
+        for (BlockInfo.EnvelopeInfo envelopeInfo : blockOnChain.getEnvelopeInfos()) {
+            //convert BlockInfo.EnvelopeInfo to TransactionInfoVO
+            TransactionInfoVO transactionInfoVO = getTransactionInfoVO(envelopeInfo);
+            transactionInfoVO.setBlockNumber(BigInteger.valueOf(blockOnChain.getBlockNumber()));
+            transactionList.add(transactionInfoVO);
+        }
+        return transactionList;
+    }
+
+
+    /**
      * get TransactionInfoVO from BlockInfo.EnvelopeInfo.
      */
-    private TransactionInfoVO getTransactionInfoVO(BlockInfo.EnvelopeInfo envelopeInfo) {
+    public TransactionInfoVO getTransactionInfoVO(BlockInfo.EnvelopeInfo envelopeInfo) {
+        //get action  list
+        List<TransactionActionVO> actionList = getTransactionActionList(envelopeInfo);
         TransactionInfoVO transactionInfoVO = TransactionInfoVO.builder()
                 .txId(envelopeInfo.getTransactionID())
                 .envelopeType(envelopeInfo.getType().name())
-                .channel(envelopeInfo.getChannelId())
-                .creator(envelopeInfo.getCreator().getId())
-                .timestamp(TimeUtils.LocalDateTimeFromDate(envelopeInfo.getTimestamp()))
-                .transactionActionList(getTransactionActionList(envelopeInfo))
+                .transTimestamp(TimeUtils.LocalDateTimeFromDate(envelopeInfo.getTimestamp()))
+                .transactionActionList(actionList)
+                .actionCount(actionList.size())
                 .build();
+
+
         return transactionInfoVO;
     }
 
@@ -178,7 +210,7 @@ public class TransactionService {
      */
     private List<TransactionActionVO> getTransactionActionList(BlockInfo.EnvelopeInfo envelopeInfo) {
         if (envelopeInfo.getType() != TRANSACTION_ENVELOPE)
-            return null;
+            return Lists.newArrayList();
 
         BlockInfo.TransactionEnvelopeInfo transactionEnvelopeInfo = (BlockInfo.TransactionEnvelopeInfo) envelopeInfo;
         List<TransactionActionVO> actionList = new ArrayList<>(transactionEnvelopeInfo.getTransactionActionInfoCount());
@@ -195,6 +227,7 @@ public class TransactionService {
     private TransactionActionVO getTransactionActionVO(BlockInfo.TransactionEnvelopeInfo.TransactionActionInfo action) {
         List<Object> argList = Lists.newLinkedList();
         for (int i = 0; i < action.getChaincodeInputArgsCount(); i++) {
+            Object str = action.getChaincodeInputArgs(i);
             argList.add(new String(action.getChaincodeInputArgs(i)));
         }
         TransactionActionVO actionVO = TransactionActionVO
@@ -209,35 +242,4 @@ public class TransactionService {
         return actionVO;
     }
 
-
-//    /**
-//     * get tbTransInfo from chain
-//     */
-//    public List<TbTransHash> getTransListFromChain(Integer channelId, String txId,
-//                                                   BigInteger blockNumber) {
-//        log.debug("start getTransListFromChain.");
-//        List<TbTransHash> transList = new ArrayList<>();
-//        //find by txId
-//        if (txId != null) {
-//            TbTransHash tbTransHash = getTbTransFromFrontByHash(channelId, txId);
-//            if (tbTransHash != null) {
-//                transList.add(tbTransHash);
-//            }
-//        }
-//        //find trans by block number
-//        if (transList.size() == 0 && blockNumber != null) {
-//            List<TransactionInfo> transInBlock = frontInterface
-//                    .getTransByBlockNumber(channelId, blockNumber);
-//            if (transInBlock != null && transInBlock.size() != 0) {
-//                transInBlock.stream().forEach(tran -> {
-//                    TbTransHash tbTransHash = new TbTransHash(tran.getHash(), tran.getFrom(),
-//                            tran.getTo(), tran.getBlockNumber(),
-//                            null);
-//                    transList.add(tbTransHash);
-//                });
-//            }
-//        }
-//        log.debug("end getTransListFromChain.");
-//        return transList;
-//    }
 }

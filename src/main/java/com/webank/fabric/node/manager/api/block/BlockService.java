@@ -9,6 +9,7 @@ import com.webank.fabric.node.manager.common.enums.TableName;
 import com.webank.fabric.node.manager.common.exception.NodeMgrException;
 import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
 import com.webank.fabric.node.manager.common.pojo.block.BlockInfoDO;
+import com.webank.fabric.node.manager.common.pojo.block.BlockInfoVO;
 import com.webank.fabric.node.manager.common.pojo.block.BlockListParam;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Hex;
@@ -235,6 +236,22 @@ public class BlockService {
      */
     public BlockInfo getBlockOnChainByNumber(int channelId, BigInteger blockNumber) throws InvalidProtocolBufferException {
         return frontRestManager.getBlockByNumber(channelId, blockNumber);
+    }
+
+    /**
+     * get BlockInfoVO by blockNumber on chain.
+     */
+    public BlockInfoVO getBlockInfoVOOnChainByNumber(int channelId, BigInteger blockNumber) throws InvalidProtocolBufferException {
+        BlockInfo blockOnChain = getBlockOnChainByNumber(channelId, blockNumber);
+
+        BlockInfoVO blockInfoVO = BlockInfoVO
+                .builder()
+                .pkHash(Hex.encodeHexString(blockOnChain.getDataHash()))
+                .blockNumber(BigInteger.valueOf(blockOnChain.getBlockNumber()))
+                .transCount(blockOnChain.getEnvelopeCount())
+                .transList(transactionService.getTransactionInfoVOListByBlockInfo(blockOnChain))
+                .build();
+        return blockInfoVO;
     }
 
     /**

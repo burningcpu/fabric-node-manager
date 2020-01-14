@@ -5,7 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.springframework.beans.BeanUtils;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,14 +16,18 @@ import java.util.List;
  */
 @Data
 @Builder
-@Accessors(chain= true)
+@Accessors(chain = true)
+@NoArgsConstructor
+@AllArgsConstructor
 public class TransactionInfoVO {
-    private String channel;
-    private Long blockNumber;
+    private BigInteger blockNumber;
     private String txId;
-    private String creator;
-    private LocalDateTime timestamp;
+    private LocalDateTime transTimestamp;
     private String envelopeType;
     private int actionCount;
     private List<TransactionActionVO> transactionActionList;
+
+    public TransactionInfoVO(TransactionDO transactionDO) {
+        BeanUtils.copyProperties(transactionDO, this);
+    }
 }

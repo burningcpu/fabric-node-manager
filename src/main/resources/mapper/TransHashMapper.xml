@@ -5,8 +5,8 @@
 <!--对应mapper接口 -->
 <mapper namespace="com.webank.fabric.node.manager.api.transaction.TransactionMapper">
     <resultMap id="transHashMap" type="com.webank.fabric.node.manager.common.pojo.transaction.TransactionDO">
-        <id column="txId" javaType="java.lang.String" jdbcType="VARCHAR" property="txId"/>
-        <result column="creator" javaType="java.lang.String" jdbcType="VARCHAR" property="creator"/>
+        <id column="trans_number" javaType="java.lang.Integer" jdbcType="INTEGER" property="transNumber"/>
+        <result column="txId" javaType="java.lang.String" jdbcType="VARCHAR" property="txId"/>
         <result column="action_count" javaType="java.lang.Integer" jdbcType="INTEGER" property="actionCount"/>
         <result column="block_number" javaType="java.math.BigInteger" jdbcType="INTEGER" property="blockNumber"/>
         <result column="envelope_type" javaType="java.lang.String" jdbcType="VARCHAR" property="envelopeType"/>
@@ -19,8 +19,8 @@
 
     <insert id="add">
         insert ignore into
-        ${tableName}(txId,block_number,creator,action_count,trans_timestamp,envelope_type,create_time,modify_time)
-        values(#{trans.txId},#{trans.blockNumber},#{trans.creator},#{trans.actionCount},#{trans.transTimestamp},#{trans.envelopeType},NOW(),NOW())
+        ${tableName}(txId,block_number,action_count,trans_timestamp,envelope_type,create_time,modify_time)
+        values(#{trans.txId},#{trans.blockNumber},#{trans.actionCount},#{trans.transTimestamp},#{trans.envelopeType},NOW(),NOW())
     </insert>
 
 
@@ -64,7 +64,8 @@
 
     <delete id="remove">
         DELETE from ${tableName}
-        where  block_number &lt;= (select max(block_number) blockNumber from tb_trans_daily where channel_id = #{channelId})
+        where block_number &lt;= (select max(block_number) blockNumber from tb_trans_daily where channel_id =
+        #{channelId})
         order by block_number
         limit ${subTransNum}
     </delete>

@@ -149,7 +149,6 @@ CREATE TABLE IF NOT EXISTS tb_token (
  CREATE TABLE IF NOT EXISTS ${tableName} (
         txId varchar(128) NOT NULL COMMENT 'txId',
         block_number bigint(25) NOT NULL COMMENT '所属区块',
-        creator varchar(60) DEFAULT NULL COMMENT 'creator(截取实际内容的前60位)',
         action_count int(11) DEFAULT NULL COMMENT '事件数（即：transactionActionInfo）',
         trans_timestamp datetime NOT NULL COMMENT '交易发生时间',
         envelope_type varchar(25) NOT NULL COMMENT '交易类型（TRANSACTION_ENVELOPE,ENVELOPE）',

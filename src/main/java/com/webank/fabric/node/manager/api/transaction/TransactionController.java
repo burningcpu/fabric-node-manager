@@ -47,22 +47,26 @@ public class TransactionController {
     public BasePageResponse queryTransList(@PathVariable("channelId") Integer channelId,
                                            @PathVariable("pageNumber") Integer pageNumber,
                                            @PathVariable("pageSize") Integer pageSize,
-                                           @RequestParam(value = "transactionId", required = false) String transactionId,
+                                           @RequestParam(value = "txId", required = false) String txId,
                                            @RequestParam(value = "blockNumber", required = false) BigInteger blockNumber) throws InvalidProtocolBufferException {
         BasePageResponse pageResponse = new BasePageResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info(
                 "start queryTransList. startTime:{} channelId:{} pageNumber:{} pageSize:{} "
-                        + "transaction:{}",
-                startTime.toEpochMilli(), channelId, pageNumber, pageSize, transactionId);
+                        + "txId:{}",
+                startTime.toEpochMilli(), channelId, pageNumber, pageSize, txId);
 
         Integer count = null;
-        List<TransactionDO> transList = Lists.newArrayList();
-        if (StringUtils.isNotBlank(transactionId)) {
-            TransactionInfoVO transInfo = transactionService.getTransOnChainByTxId(channelId, transactionId);
-
+        List<TransactionInfoVO> transList = Lists.newArrayList();
+        if (StringUtils.isNotBlank(txId)) {
+            TransactionInfoVO transInfo = transactionService.getTransOnChainByTxId(channelId, txId);
+            if (Objects.nonNull(transInfo)) {
+                count = 1;
+                transList.add(transInfo);
+            }
         } else if (Objects.nonNull(blockNumber)) {
-            return null;
+            transList = transactionService.getTransListOnChainByBlockNumber(channelId, blockNumber);
+            count = transList.size();
         } else if ((count = transactionService.queryCountOfTranByMinus(channelId)) != null && count > 0) {
             //query trans list form database
             //param
@@ -74,7 +78,9 @@ public class TransactionController {
             queryParam.setFlagSortedByBlock(SqlSortType.DESC.getValue());
 
             //query from database
-            transList = transactionService.queryTransList(channelId, queryParam);
+            List<TransactionDO> transDoList = transactionService.queryTransList(channelId, queryParam);
+            for (TransactionDO transDo : transDoList)
+                transList.add(new TransactionInfoVO(transDo));
         }
 
         if (count != null && count > 0) {
@@ -90,15 +96,15 @@ public class TransactionController {
     /**
      * get transaction by hash.
      */
-    @GetMapping("/transDetail/{channelId}/{transactionId}")
+    @GetMapping("/detail/{channelId}/{txId}")
     public BaseResponse getTransactionByTxId(@PathVariable("channelId") Integer channelId,
-                                             @PathVariable("transactionId") String transactionId)
+                                             @PathVariable("txId") String txId)
             throws NodeMgrException, InvalidProtocolBufferException {
         Instant startTime = Instant.now();
-        log.info("start getTransactionByTxId startTime:{} channelId:{} transactionId:{}",
-                startTime.toEpochMilli(), channelId, transactionId);
+        log.info("start getTransactionByTxId startTime:{} channelId:{} txId:{}",
+                startTime.toEpochMilli(), channelId, txId);
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
-        TransactionInfoVO transInfo = transactionService.getTransOnChainByTxId(channelId, transactionId);
+        TransactionInfoVO transInfo = transactionService.getTransOnChainByTxId(channelId, txId);
         baseResponse.setData(transInfo);
         log.info("end getTransactionByTxId useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(baseResponse));
