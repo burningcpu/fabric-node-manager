@@ -71,7 +71,7 @@
       channel_id int(11) NOT NULL COMMENT '所属通道编号',
       trans_day date NOT NULL COMMENT '日期',
       trans_count int(11) DEFAULT '0' COMMENT '交易数量',
-      block_height int(11) DEFAULT '0' COMMENT '当前统计到的块高',
+      trans_number int(11) DEFAULT '0' COMMENT '当前统计到的交易编号',
       create_time datetime DEFAULT NULL COMMENT '创建时间',
       modify_time datetime DEFAULT NULL COMMENT '修改时间',
       PRIMARY KEY (channel_id,trans_day)

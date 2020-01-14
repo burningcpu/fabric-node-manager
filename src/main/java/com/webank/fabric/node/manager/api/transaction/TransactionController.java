@@ -8,6 +8,7 @@ import com.webank.fabric.node.manager.common.exception.NodeMgrException;
 import com.webank.fabric.node.manager.common.pojo.base.BasePageResponse;
 import com.webank.fabric.node.manager.common.pojo.base.BaseResponse;
 import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
+import com.webank.fabric.node.manager.common.pojo.transaction.SevenDaysTrans;
 import com.webank.fabric.node.manager.common.pojo.transaction.TransListParam;
 import com.webank.fabric.node.manager.common.pojo.transaction.TransactionDO;
 import com.webank.fabric.node.manager.common.pojo.transaction.TransactionInfoVO;
@@ -38,6 +39,8 @@ public class TransactionController {
     private TransactionService transactionService;
     @Autowired
     private ChannelService channelService;
+    @Autowired
+    private TransDailyService transDailyService;
 
 
     /**
@@ -75,7 +78,7 @@ public class TransactionController {
             TransListParam queryParam = new TransListParam();
             queryParam.setStart(start);
             queryParam.setPageSize(pageSize);
-            queryParam.setFlagSortedByBlock(SqlSortType.DESC.getValue());
+            queryParam.setFlagSortedByTransNumber(SqlSortType.DESC.getValue());
 
             //query from database
             List<TransactionDO> transDoList = transactionService.queryTransList(channelId, queryParam);
@@ -109,5 +112,24 @@ public class TransactionController {
         log.info("end getTransactionByTxId useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(baseResponse));
         return baseResponse;
+    }
+
+    /**
+     * get trans daily.
+     */
+    @GetMapping("/transDaily/{channelId}")
+    public BaseResponse getTransDaily(@PathVariable("channelId") Integer channelId) throws Exception {
+        BaseResponse pagesponse = new BaseResponse(ConstantCode.SUCCESS);
+        Instant startTime = Instant.now();
+        log.info("start getTransDaily startTime:{} channelId:{}", startTime.toEpochMilli(), channelId);
+
+        // query trans daily
+        List<SevenDaysTrans> listTrans = transDailyService.listSevenDayOfTrans(channelId);
+        pagesponse.setData(listTrans);
+
+        log.info("end getTransDaily useTime:{} result:{}",
+                Duration.between(startTime, Instant.now()).toMillis(),
+                JSON.toJSONString(pagesponse));
+        return pagesponse;
     }
 }

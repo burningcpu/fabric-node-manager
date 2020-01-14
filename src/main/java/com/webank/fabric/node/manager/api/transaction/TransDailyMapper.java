@@ -15,7 +15,7 @@
  */
 package com.webank.fabric.node.manager.api.transaction;
 
-import com.webank.fabric.node.manager.common.pojo.transaction.SeventDaysTrans;
+import com.webank.fabric.node.manager.common.pojo.transaction.SevenDaysTrans;
 import com.webank.fabric.node.manager.common.pojo.transaction.TransDailyDO;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -33,7 +33,7 @@ public interface TransDailyMapper {
     /**
      * query Trading within seven days.
      */
-    List<SeventDaysTrans> listSeventDayOfTransDaily(@Param("channelId") Integer channelId);
+    List<SevenDaysTrans> listSevenDayOfTransDaily(@Param("channelId") Integer channelId);
 
     /**
      * update tb_trans_daily.

@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 public class TransactionDO {
-    private Integer transNumber;
+    private BigInteger transNumber;
     private String txId;
     private BigInteger blockNumber;
     private int actionCount;

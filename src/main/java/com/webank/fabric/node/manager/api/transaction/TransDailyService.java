@@ -17,21 +17,22 @@ import com.alibaba.fastjson.JSON;
 import com.webank.fabric.node.manager.api.channel.ChannelService;
 import com.webank.fabric.node.manager.common.exception.NodeMgrException;
 import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
-import com.webank.fabric.node.manager.common.pojo.transaction.SeventDaysTrans;
+import com.webank.fabric.node.manager.common.pojo.transaction.SevenDaysTrans;
 import com.webank.fabric.node.manager.common.pojo.transaction.TransDailyDO;
+import com.webank.fabric.node.manager.common.utils.TimeUtils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Log4j2
 @Service
 public class TransDailyService {
+    private static final int COUNT_DATE_OF_WEEK = 7;
+    private static final int DATE_MINUS_FLAG = -1;
 
     @Autowired
     private ChannelService channelService;
@@ -42,44 +43,47 @@ public class TransDailyService {
     /**
      * query Trading within seven days.
      */
-    public List<SeventDaysTrans> listSeventDayOfTrans(Integer channelId) throws NodeMgrException {
-        log.debug("start listSeventDayOfTrans channelId:{}", channelId);
-        try {
-            // qurey
-            List<SeventDaysTrans> transList = transDailyMapper
-                    .listSeventDayOfTransDaily(channelId);
-            log.debug("end listSeventDayOfTrans transList:{}", JSON.toJSONString(transList));
-            return transList;
-        } catch (RuntimeException ex) {
-            log.debug("fail listSeventDayOfTrans channelId:{}", channelId, ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+    public List<SevenDaysTrans> listSevenDayOfTrans(Integer channelId) throws NodeMgrException {
+        log.debug("start listSevenDayOfTrans channelId:{}", channelId);
+
+        // qurey
+        List<SevenDaysTrans> transDailyList = transDailyMapper.listSevenDayOfTransDaily(channelId);
+        List<LocalDate> dateListOfWeek = TimeUtils.getDateList(LocalDate.now(), COUNT_DATE_OF_WEEK, DATE_MINUS_FLAG);
+        for (LocalDate date : dateListOfWeek) {
+            Optional<SevenDaysTrans> dailyTransOptional = transDailyList.stream().filter(td -> td.getDay().equals(date)).findAny();
+            if(!dailyTransOptional.isPresent()){
+                transDailyList.add(SevenDaysTrans.builder().channelId(channelId).day(date).build());
+            }
         }
+        log.debug("end listSevenDayOfTrans transDailyList:{}", JSON.toJSONString(transDailyList));
+        return transDailyList;
+
     }
 
     /**
      * update trans daily info.
      */
-    public void updateTransDaily(Integer channelId, LocalDate transDay, BigInteger oldBlockNumber,
-                                 BigInteger latestBlockNumber, BigInteger transCount)
+    public void updateTransDaily(Integer channelId, LocalDate transDay, BigInteger oldTransNumber,
+                                 BigInteger latestTransNumber, BigInteger transCount)
             throws NodeMgrException {
         log.debug(
-                "start updateTransDaily channelId:{} transDay:{} oldBlockNumber:{} "
-                        + "latestBlockNumber:{} transCount:{}", channelId, JSON.toJSONString(transDay),
-                oldBlockNumber, latestBlockNumber, transCount);
+                "start updateTransDaily channelId:{} transDay:{} oldTransNumber:{} "
+                        + "latestTransNumber:{} transCount:{}", channelId, JSON.toJSONString(transDay),
+                oldTransNumber, latestTransNumber, transCount);
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put("channelId", channelId);
-        paramMap.put("oldBlockNumber", oldBlockNumber);
+        paramMap.put("oldTransNumber", oldTransNumber);
         paramMap.put("transDay", transDay);
-        paramMap.put("latestBlockNumber", latestBlockNumber);
+        paramMap.put("latestTransNumber", latestTransNumber);
         paramMap.put("transCount", transCount);
         Integer affectRow = 0;
         try {
             affectRow = transDailyMapper.updateTransDaily(paramMap);
         } catch (RuntimeException ex) {
             log.error(
-                    "fail updateTransDaily channelId:{} transDay:{} oldBlockNumber:{}"
-                            + " latestBlockNumber:{} transCount:{}",
-                    channelId, transDay, oldBlockNumber, latestBlockNumber, transCount, ex);
+                    "fail updateTransDaily channelId:{} transDay:{} oldTransNumber:{}"
+                            + " latestTransNumber:{} transCount:{}",
+                    channelId, transDay, oldTransNumber, latestTransNumber, transCount, ex);
             throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
         }
 
@@ -89,28 +93,8 @@ public class TransDailyService {
     /**
      * add trans daily info.
      */
-    public void addTbTransDailyInfo(Integer channelId, LocalDate transDay, Integer transCount,
-                                    BigInteger blockNumber) throws NodeMgrException {
-        log.debug("start addTbTransDailyInfo channelId:{} transDay:{} transCount:{} blockNumber:{}",
-                channelId, JSON.toJSONString(transDay),
-                transCount, blockNumber);
-
-        // check group id
-        channelService.checkChannelId(channelId);
-
-        // add row
-        TransDailyDO rowParam = new TransDailyDO(channelId, transDay, transCount, blockNumber);
-        try {
-            transDailyMapper.addTransDailyRow(rowParam);
-        } catch (RuntimeException ex) {
-            log.error(
-                    "start addTbTransDailyInfo channelId:{} transDay:{} transCount:{} blockNumber:{}",
-                    channelId, JSON.toJSONString(transDay),
-                    transCount, blockNumber, ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
-        }
-
-        log.debug("end addNodeInfo");
+    public void addTransDailyDO(TransDailyDO transDailyDO) throws NodeMgrException {
+        transDailyMapper.addTransDailyRow(transDailyDO);
     }
 
 

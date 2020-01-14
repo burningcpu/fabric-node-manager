@@ -35,11 +35,11 @@ import java.util.List;
  */
 @Log4j2
 @Component
-@ConditionalOnProperty(name = "constant.isDeleteInfo", havingValue = "true")
+@ConditionalOnProperty(name = "schedule.isDeleteInfo", havingValue = "true")
 public class DeleteInfoTask {
 
     @Autowired
-    private ChannelService groupService;
+    private ChannelService channelService;
     @Autowired
     private BlockService blockService;
     @Autowired
@@ -60,7 +60,7 @@ public class DeleteInfoTask {
         Instant startTime = Instant.now();
         log.info("start deleteInfoStart. startTime:{}", startTime.toEpochMilli());
         //get group list
-        List<ChannelDO> channelList = groupService.getChannelList(DataStatus.NORMAL.getValue());
+        List<ChannelDO> channelList = channelService.getChannelList(DataStatus.NORMAL.getValue());
         if (channelList == null || channelList.size() == 0) {
             log.info("DeleteInfoTask jump over .not found any group");
             return;
@@ -104,19 +104,30 @@ public class DeleteInfoTask {
      * delete transHash.
      */
     private void deleteTransHash(int channelId) {
-        // TODO 循环删除：根据scheduleProperties.getTransRetainMax().intValue() 和 trans_number
         log.info("start deleteTransHash. channelId:{}", channelId);
         try {
-            int count;
-            while ((count = transHashService.queryCountOfTranByMinus(channelId)) > scheduleProperties.getTransRetainMax().intValue()) {
-                Integer subTransNum = count - scheduleProperties.getTransRetainMax().intValue();
-                int removeCount = transHashService.remove(channelId, subTransNum);
+            int removeCount = 1;
+            while (removeCount > 0) {
+                removeCount = transHashService.remove(channelId, scheduleProperties.getTransRetainMax());
                 log.info("end deleteTransHash. channelId:{} removeCount:{}", channelId, removeCount);
+                Thread.sleep(3);
             }
-
         } catch (Exception ex) {
             log.info("fail deleteTransHash. channelId:{}", channelId, ex);
         }
+
+
+//        try {
+//            int count;
+//            while ((count = transHashService.queryCountOfTranByMinus(channelId)) > scheduleProperties.getTransRetainMax().intValue()) {
+//                Integer subTransNum = count - scheduleProperties.getTransRetainMax().intValue();
+//                int removeCount = transHashService.remove(channelId, subTransNum);
+//                log.info("end deleteTransHash. channelId:{} removeCount:{}", channelId, removeCount);
+//            }
+//
+//        } catch (Exception ex) {
+//            log.info("fail deleteTransHash. channelId:{}", channelId, ex);
+//        }
     }
 
 }

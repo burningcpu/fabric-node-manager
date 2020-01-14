@@ -1,11 +1,13 @@
 package com.webank.fabric.node.manager.api.transaction;
 
+import com.webank.fabric.node.manager.common.pojo.transaction.LatestTransCountBO;
 import com.webank.fabric.node.manager.common.pojo.transaction.MinMaxBlock;
 import com.webank.fabric.node.manager.common.pojo.transaction.TransListParam;
 import com.webank.fabric.node.manager.common.pojo.transaction.TransactionDO;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigInteger;
 import java.util.List;
 
 /**
@@ -25,7 +27,8 @@ public interface TransactionMapper {
     List<MinMaxBlock> queryMinMaxBlock(@Param("tableName") String tableName);
 
     Integer remove(@Param("tableName") String tableName,
-                   @Param("subTransNum") Integer subTransNum, @Param("channelId") Integer channelId);
+                   @Param("transRetainMax") BigInteger transRetainMax,
+                   @Param("channelId") Integer channelId);
 
-
+    List<LatestTransCountBO> queryLatestTransCount(@Param("tableName") String tableName, @Param("channelId") Integer channelId);
 }

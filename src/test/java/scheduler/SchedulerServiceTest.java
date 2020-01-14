@@ -14,7 +14,9 @@
 package scheduler;
 
 import com.webank.fabric.node.manager.Application;
+import com.webank.fabric.node.manager.scheduler.DeleteInfoTask;
 import com.webank.fabric.node.manager.scheduler.PullBlockInfoTask;
+import com.webank.fabric.node.manager.scheduler.StatisticsTransDailyTask;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +30,26 @@ public class SchedulerServiceTest {
 
     @Autowired
     private PullBlockInfoTask pullBlockTransTask;
+    @Autowired
+    private StatisticsTransDailyTask statisticsTransDailyTask;
+    @Autowired
+    private DeleteInfoTask deleteInfoTask;
 
     @Test
     public void pullBlockInfoTaskTest() {
         pullBlockTransTask.pullBlockStart();
     }
+
+
+    @Test
+    public void statisticsTransDailyTaskTest() {
+        statisticsTransDailyTask.taskStart();
+    }
+
+    @Test
+    public void deleteInfoTaskTest() {
+        deleteInfoTask.taskStart();
+    }
+
 
 }

@@ -126,9 +126,10 @@ public class TransactionService {
     /**
      * Remove trans info.
      */
-    public Integer remove(Integer channelId, Integer subTransNum) {
+    public Integer remove(Integer channelId, BigInteger transRetainMax) {
         String tableName = TableName.TRANS.getTableName(channelId);
-        Integer affectRow = transactionMapper.remove(tableName, subTransNum, channelId);
+        Integer affectRow = transactionMapper.remove(tableName, transRetainMax, channelId);
+
         return affectRow;
     }
 
@@ -242,4 +243,11 @@ public class TransactionService {
         return actionVO;
     }
 
+    /**
+     * get latest trans count of each date.
+     */
+    public List<LatestTransCountBO> queryLatestTransCount(Integer channelId) {
+        String tableName = TableName.TRANS.getTableName(channelId);
+        return transactionMapper.queryLatestTransCount(tableName, channelId);
+    }
 }

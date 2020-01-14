@@ -27,6 +27,6 @@ import java.time.LocalDate;
 public class StatisticalChannelTransInfo {
     private Integer channelId;
     private LocalDate maxDay;
-    private BigInteger blockNumber = BigInteger.ZERO;
+    private BigInteger transNumber = BigInteger.ZERO;
     private BigInteger transCount = BigInteger.ZERO;
 }

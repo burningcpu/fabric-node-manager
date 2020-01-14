@@ -24,8 +24,8 @@
         <result column="channel_id" javaType="java.lang.Integer" jdbcType="INTEGER"
                 property="channelId"/>
         <result column="maxDay" javaType="java.time.LocalDate" jdbcType="TIMESTAMP" property="maxDay"/>
-        <result column="block_number" javaType="java.math.BigInteger" jdbcType="INTEGER"
-                property="blockNumber"/>
+        <result column="trans_number" javaType="java.math.BigInteger" jdbcType="INTEGER"
+                property="transNumber"/>
         <result column="trans_count" javaType="java.math.BigInteger" jdbcType="INTEGER"
                 property="transCount"/>
     </resultMap>
@@ -72,7 +72,7 @@
 
 
     <select id="queryLatestStatisticalTrans" resultMap="statisticalTransMap">
-        select a.channel_id,b.maxDay,c.block_number,c.trans_count from tb_channel a
+        select a.channel_id,b.maxDay,c.trans_number,c.trans_count from tb_channel a
         LEFT JOIN
         (select channel_id,max(trans_day) as maxDay from tb_trans_daily GROUP BY channel_id)b
         on (a.channel_id = b.channel_id)

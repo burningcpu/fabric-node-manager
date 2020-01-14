@@ -16,7 +16,10 @@
 package com.webank.fabric.node.manager.common.pojo.transaction;
 
 import com.webank.fabric.node.manager.common.pojo.base.BaseQueryParam;
-import lombok.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.math.BigInteger;
 
@@ -28,12 +31,13 @@ import java.math.BigInteger;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public class TransListParam extends BaseQueryParam {
+    private BigInteger minTransNumber;
     private BigInteger blockNumber;
     private String txId;
-    private String flagSortedByBlock;
+    private String flagSortedByTransNumber;
 
-    public TransListParam(String txId, BigInteger blockNumber) {
-        this.txId = txId;
-        this.blockNumber = blockNumber;
+    public TransListParam(BigInteger minTransNumber, String flagSortedByTransNumber) {
+        this.minTransNumber = minTransNumber;
+        this.flagSortedByTransNumber = flagSortedByTransNumber;
     }
 }

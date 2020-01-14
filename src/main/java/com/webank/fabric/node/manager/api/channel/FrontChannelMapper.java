@@ -15,7 +15,7 @@ public interface FrontChannelMapper {
 
     int getCount(MapListParam mapListParam);
 
-    int removeByChannelId(@Param("groupId") Integer channelId);
+    int removeByChannelId(@Param("channelId") Integer channelId);
 
     int removeByFrontId(@Param("frontId") Integer frontId);
 

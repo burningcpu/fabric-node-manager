@@ -15,6 +15,7 @@
  */
 package com.webank.fabric.node.manager.common.pojo.transaction;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigInteger;
@@ -25,29 +26,14 @@ import java.time.LocalDateTime;
  * Entity class of table tb_trans_daily.
  */
 @Data
+@Builder
 public class TransDailyDO {
 
-    private Integer groupId;
+    private Integer channelId;
     private LocalDate transDay;
-    private Integer transCount;
-    private BigInteger blockNumber;
+    private BigInteger transCount;
+    private BigInteger transNumber;
     private LocalDateTime createTime;
     private LocalDateTime modifyTime;
-
-    public TransDailyDO() {
-        super();
-    }
-
-    /**
-     * init by groupId、transDay、transCount、blockNumber.
-     */
-    public TransDailyDO(Integer groupId, LocalDate transDay, Integer transCount,
-                        BigInteger blockNumber) {
-        super();
-        this.groupId = groupId;
-        this.transDay = transDay;
-        this.transCount = transCount;
-        this.blockNumber = blockNumber;
-    }
 
 }
