@@ -19,6 +19,7 @@ import com.webank.fabric.node.manager.api.channel.ChannelService;
 import com.webank.fabric.node.manager.api.transaction.TransactionService;
 import com.webank.fabric.node.manager.common.enums.DataStatus;
 import com.webank.fabric.node.manager.common.pojo.channel.ChannelDO;
+import com.webank.fabric.node.manager.common.pojo.properties.ScheduleProperties;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -107,7 +108,7 @@ public class DeleteInfoTask {
         log.info("start deleteTransHash. channelId:{}", channelId);
         try {
             int count;
-            while ((count= transHashService.queryCountOfTranByMinus(channelId)) > scheduleProperties.getTransRetainMax().intValue()) {
+            while ((count = transHashService.queryCountOfTranByMinus(channelId)) > scheduleProperties.getTransRetainMax().intValue()) {
                 Integer subTransNum = count - scheduleProperties.getTransRetainMax().intValue();
                 int removeCount = transHashService.remove(channelId, subTransNum);
                 log.info("end deleteTransHash. channelId:{} removeCount:{}", channelId, removeCount);
