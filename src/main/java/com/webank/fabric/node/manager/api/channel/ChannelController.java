@@ -8,6 +8,7 @@ import com.webank.fabric.node.manager.common.pojo.base.BasePageResponse;
 import com.webank.fabric.node.manager.common.pojo.base.BaseResponse;
 import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
 import com.webank.fabric.node.manager.common.pojo.channel.ChannelDO;
+import com.webank.fabric.node.manager.common.pojo.channel.ChannelGeneral;
 import com.webank.fabric.node.manager.common.pojo.transaction.SevenDaysTrans;
 import io.swagger.annotations.Api;
 import lombok.extern.log4j.Log4j2;
@@ -37,7 +38,7 @@ public class ChannelController {
     private TransDailyService transDailyService;
 
     /**
-     * query all group.
+     * query all channel.
      */
     @GetMapping("/all")
     public BasePageResponse getAllChannel() throws NodeMgrException {
@@ -45,7 +46,7 @@ public class ChannelController {
         Instant startTime = Instant.now();
         log.info("start getAllChannel startTime:{}", startTime.toEpochMilli());
 
-        // get group list
+        // get channel list
         int count = channelService.countOfChannel(null, DataStatus.NORMAL.getValue());
         if (count > 0) {
             List<ChannelDO> groupList = channelService.getChannelList(DataStatus.NORMAL.getValue());
@@ -53,7 +54,7 @@ public class ChannelController {
             pagesponse.setData(groupList);
         }
 
-        // reset group
+        // reset channel
         frontChannelService.resetMapList();
 
         log.info("end getAllChannel useTime:{} result:{}",
@@ -81,4 +82,23 @@ public class ChannelController {
         return pagesponse;
     }
 
+
+    /**
+     * get channel general.
+     */
+    @GetMapping("/general/{channelId}")
+    public BaseResponse getChannelGeneral(@PathVariable("channelId") Integer channelId)
+            throws NodeMgrException {
+        Instant startTime = Instant.now();
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        log.info("start getChannelGeneral startTime:{} channelId:{}", startTime.toEpochMilli(),
+                channelId);
+        ChannelGeneral channelGeneral = channelService.queryChannelGeneral(channelId);
+
+        baseResponse.setData(channelGeneral);
+        log.info("end getChannelGeneral useTime:{} result:{}",
+                Duration.between(startTime, Instant.now()).toMillis(),
+                JSON.toJSONString(baseResponse));
+        return baseResponse;
+    }
 }

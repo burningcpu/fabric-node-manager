@@ -23,6 +23,7 @@ import com.webank.fabric.node.manager.common.utils.TimeUtils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
@@ -51,10 +52,12 @@ public class TransDailyService {
         List<LocalDate> dateListOfWeek = TimeUtils.getDateList(LocalDate.now(), COUNT_DATE_OF_WEEK, DATE_MINUS_FLAG);
         for (LocalDate date : dateListOfWeek) {
             Optional<SevenDaysTrans> dailyTransOptional = transDailyList.stream().filter(td -> td.getDay().equals(date)).findAny();
-            if(!dailyTransOptional.isPresent()){
+            if (!dailyTransOptional.isPresent()) {
                 transDailyList.add(SevenDaysTrans.builder().channelId(channelId).day(date).build());
             }
         }
+        //sort
+        Collections.sort(transDailyList);
         log.debug("end listSevenDayOfTrans transDailyList:{}", JSON.toJSONString(transDailyList));
         return transDailyList;
 

@@ -1,9 +1,11 @@
 package com.webank.fabric.node.manager.api.channel;
 
 import com.alibaba.fastjson.JSON;
+import com.webank.fabric.node.manager.common.enums.TableName;
 import com.webank.fabric.node.manager.common.exception.NodeMgrException;
 import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
 import com.webank.fabric.node.manager.common.pojo.channel.ChannelDO;
+import com.webank.fabric.node.manager.common.pojo.channel.ChannelGeneral;
 import com.webank.fabric.node.manager.common.pojo.channel.StatisticalChannelTransInfo;
 import com.webank.fabric.node.manager.tablecreate.TableCreateService;
 import lombok.extern.slf4j.Slf4j;
@@ -115,5 +117,12 @@ public class ChannelService {
         return channelMapper.queryLatestStatisticalTrans();
     }
 
+    /**
+     * get general of channel.
+     */
+    public ChannelGeneral queryChannelGeneral(Integer channelId) throws NodeMgrException {
+        String tableName = TableName.TRANS.getTableName(channelId);
+        return channelMapper.getGeneral(tableName, channelId);
+    }
 
 }

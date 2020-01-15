@@ -23,6 +23,7 @@ import lombok.experimental.Accessors;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
+import java.util.Objects;
 
 /**
  * Entity class of Trading within seven days.
@@ -32,8 +33,17 @@ import java.time.LocalDate;
 @Accessors(chain = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class SevenDaysTrans {
+public class SevenDaysTrans implements Comparable<SevenDaysTrans> {
     private LocalDate day;
     private int channelId;
     private BigInteger transCount;
+
+    @Override
+    public int compareTo(SevenDaysTrans target) {
+        if (Objects.isNull(this.day) || this.day.equals(target.getDay()))
+            return 0;
+        if (this.day.isBefore(target.getDay()))
+            return -1;
+        return 1;
+    }
 }

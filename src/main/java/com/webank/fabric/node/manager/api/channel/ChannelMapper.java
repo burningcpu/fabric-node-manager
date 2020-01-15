@@ -46,5 +46,5 @@ public interface ChannelMapper {
     /**
      * query general info.
      */
-    ChannelGeneral getGeneral(@Param("channelId") Integer channelId);
+    ChannelGeneral getGeneral(@Param("transTableName") String transTableName, @Param("channelId") Integer channelId);
 }

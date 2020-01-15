@@ -21,7 +21,7 @@ import lombok.Data;
 public class ChannelGeneral {
 
     private Integer channelId;
-    private int orgCount;
+    //private int orgCount;
     private int peerCount;
     //private int contractCount;
     private long transactionCount;
