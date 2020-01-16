@@ -41,6 +41,7 @@ public class FrontRestManager {
     public static final String URI_BLOCK_BY_HASH = "sdk/queryBlockByHash/%1s";
     public static final String URI_BLOCK_BY_TRANSACTION_ID = "sdk/blockInfo/%1s";
     public static final String URI_GET_TRANSACTION_BY_ID = "sdk/transactionInfo/%1s";
+    public static final String URI_GET_CHAIN_CODE_NAME_LIST = "sdk/chainCodeNameList";
     @Autowired
     private RestTemplate restTemplate;
     @Autowired
@@ -138,6 +139,7 @@ public class FrontRestManager {
         log.debug("end getBlockByHash.");
         return blockInfo;
     }
+
     /**
      * get block by hash.
      */
@@ -150,7 +152,15 @@ public class FrontRestManager {
         return blockInfo;
     }
 
-
+    /**
+     * get block by hash.
+     */
+    public List<String> getChainCodeNameList(int channelId) {
+        log.debug("start getChainCodeNameList. channelId:{}", channelId);
+        String[] chainCodeNameArr = getForEntity(channelId, URI_GET_CHAIN_CODE_NAME_LIST, String[].class);
+        log.debug("end getChainCodeNameList.");
+        return Arrays.asList(chainCodeNameArr);
+    }
 
 
     /**

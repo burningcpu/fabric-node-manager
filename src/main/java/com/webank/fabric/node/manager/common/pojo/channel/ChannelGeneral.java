@@ -23,7 +23,7 @@ public class ChannelGeneral {
     private Integer channelId;
     //private int orgCount;
     private int peerCount;
-    //private int contractCount;
+    private int chainCodeCount;
     private long transactionCount;
     private long latestBlock;
 

@@ -1,6 +1,7 @@
 package com.webank.fabric.node.manager.api.channel;
 
 import com.alibaba.fastjson.JSON;
+import com.webank.fabric.node.manager.api.front.FrontRestManager;
 import com.webank.fabric.node.manager.common.enums.TableName;
 import com.webank.fabric.node.manager.common.exception.NodeMgrException;
 import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
@@ -25,6 +26,8 @@ public class ChannelService {
     private ChannelMapper channelMapper;
     @Autowired
     private TableCreateService tableCreateService;
+    @Autowired
+    private FrontRestManager frontRestManager;
 
 
     /**
@@ -121,8 +124,12 @@ public class ChannelService {
      * get general of channel.
      */
     public ChannelGeneral queryChannelGeneral(Integer channelId) throws NodeMgrException {
+        //get chainCodeNameList from chain
+        List<String> chainCodeNameList = frontRestManager.getChainCodeNameList(channelId);
         String tableName = TableName.TRANS.getTableName(channelId);
-        return channelMapper.getGeneral(tableName, channelId);
+        ChannelGeneral channelGeneral = channelMapper.getGeneral(tableName, channelId);
+        channelGeneral.setChainCodeCount(chainCodeNameList.size());
+        return channelGeneral;
     }
 
 }
