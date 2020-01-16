@@ -21,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -70,7 +69,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .failureHandler(loginfailHandler) // if login fail
                 .and().authorizeRequests()
                 .antMatchers("/account/login", "/account/pictureCheckCode",
-                        "/login", "/user/privateKey/**", "/encrypt")
+                        "/login", "/user/privateKey/**", "/encrypt", "/webjars/**",
+                        "/resources/**", "/swagger-ui.html", "/swagger-resources/**",
+                        "/v2/api-docs")
                 .permitAll()
                 .anyRequest().authenticated().and().csrf()
                 .disable() // close csrf
