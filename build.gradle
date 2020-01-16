@@ -22,7 +22,8 @@ def springboot_version = "2.2.2.RELEASE"
 List springboot = [
         "org.springframework.boot:spring-boot-starter-web:$springboot_version",
         "org.springframework.boot:spring-boot-starter-log4j2:$springboot_version",
-        "org.springframework.boot:spring-boot-starter-aop:$springboot_version"
+        "org.springframework.boot:spring-boot-starter-aop:$springboot_version",
+        "org.springframework.boot:spring-boot-starter-security:$springboot_version"
 ]
 List database = [
         "com.zaxxer:HikariCP:3.2.0",
@@ -32,7 +33,11 @@ List database = [
 ]
 
 List fabricSdk = ["org.hyperledger.fabric-sdk-java:fabric-sdk-java:1.4.7"]
-List fastjson = ["com.alibaba:fastjson:1.2.54"]
+List alibaba = [
+        "com.alibaba:fastjson:1.2.54",
+        "com.alibaba:druid:1.1.21"
+]
+
 List commons = ["org.apache.commons:commons-lang3:3.8.1"]
 List test = ["org.springframework.boot:spring-boot-starter-test:$springboot_version"]
 List swagger = [
@@ -42,7 +47,7 @@ List swagger = [
 
 
 dependencies {
-    compile springboot, fabricSdk, fastjson, commons, swagger, database
+    compile springboot, fabricSdk, alibaba, commons, swagger, database
     annotationProcessor 'org.projectlombok:lombok:1.18.6'
     compileOnly 'org.projectlombok:lombok:1.18.6'
 

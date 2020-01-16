@@ -54,6 +54,31 @@ public class ConstantCode {
 
     public static final RetCode INVALID_FRONT_ID = RetCode.mark(204009, "invalid front id");
 
+    public static final RetCode TOKEN_EXPIRE = RetCode.mark(204010, "token expire");
+
+    public static final RetCode INVALID_TOKEN = RetCode.mark(204011, "invalid token");
+
+    public static final RetCode ROLE_ID_EMPTY = RetCode.mark(204012, "role id cannot be empty");
+
+    public static final RetCode INVALID_ROLE_ID = RetCode.mark(204013, "invalid role id");
+
+    public static final RetCode ACCOUNT_EXISTS = RetCode.mark(204014, "account info already exists");
+
+    public static final RetCode ACCOUNT_NOT_EXISTS = RetCode.mark(204015, "account info not exists");
+
+    public static final RetCode NOW_PWD_EQUALS_OLD = RetCode.mark(204016, "the new password cannot be same as old");
+
+    public static final RetCode ACCOUNT_NAME_EMPTY = RetCode.mark(204017, "account name empty");
+
+    public static final RetCode INVALID_ACCOUNT_NAME = RetCode.mark(204018, "invalid account name");
+
+    public static final RetCode PASSWORD_ERROR = RetCode.mark(204019, "password error");
+
+
+    /* auth */
+    public static final RetCode USER_NOT_LOGGED_IN = RetCode.mark(304000, "user not logged in");
+    public static final RetCode ACCESS_DENIED = RetCode.mark(304001, "access denied");
+
 
     /* param exception */
     public static final RetCode PARAM_EXCEPTION = RetCode.mark(404000, "param exception");

@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import java.math.BigInteger;
 
 /**
- * properties of front.
+ * properties of schedule.
  */
 @Data
 @Configuration

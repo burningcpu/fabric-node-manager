@@ -20,6 +20,7 @@ import com.webank.fabric.node.manager.common.pojo.base.RetCode;
 /**
  * business exception.
  */
+
 public class NodeMgrException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
@@ -43,4 +44,5 @@ public class NodeMgrException extends RuntimeException {
     public RetCode getCodeAndMsg() {
         return retCode;
     }
+
 }

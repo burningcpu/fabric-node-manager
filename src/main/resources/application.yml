@@ -12,6 +12,12 @@ spring:
     username: "root"
     password: "123456"
 
+# spring security
+security:
+  isUseSecurity: true   # login's authorization
+  verificationCodeMaxAge: 300
+  authTokenMaxAge: 1800
+
 schedule:
   ###block info (pulling data from chain)
   pullBlockSleepTime: 200
@@ -30,9 +36,6 @@ schedule:
 #constants
 constant:
   ###http request
-  isUseSecurity: false   # login's authorization
-  verificationCodeMaxAge: 300
-  authTokenMaxAge: 1800
   ignoreCheckFront: /account/login,/account/pictureCheckCode,/login,/front/new,/front/find,/channel/generate,/channel/start
 
 
