@@ -5,29 +5,23 @@
 <!--对应mapper接口 -->
 <mapper namespace="com.webank.fabric.node.manager.api.peer.PeerMapper">
     <resultMap id="peerMap" type="com.webank.fabric.node.manager.common.pojo.peer.PeerDO">
-        <id column="peer_id" javaType="java.lang.String" jdbcType="VARCHAR" property="peerId"/>
-        <id column="channel_id" javaType="java.lang.Integer" jdbcType="INTEGER" property="channelId"/>
+        <id column="peer_id" javaType="java.lang.Integer" jdbcType="INTEGER" property="peerId"/>
+        <result column="channel_id" javaType="java.lang.Integer" jdbcType="INTEGER" property="channelId"/>
         <result column="peer_name" javaType="java.lang.String" jdbcType="VARCHAR" property="peerName"/>
-        <result column="peer_address" javaType="java.lang.String" jdbcType="VARCHAR" property="peerAddress"/>
-        <result column="block_number" javaType="java.math.BigInteger" jdbcType="INTEGER"
-                property="blockNumber"/>
-        <result column="description" javaType="java.lang.String" jdbcType="VARCHAR"
-                property="description"/>
-        <result column="create_time" javaType="java.time.LocalDateTime" jdbcType="TIMESTAMP"
-                property="createTime"/>
-        <result column="modify_time" javaType="java.time.LocalDateTime" jdbcType="TIMESTAMP"
-                property="modifyTime"/>
+        <result column="peer_port" javaType="java.lang.Integer" jdbcType="VARCHAR" property="peerPort"/>
+        <result column="peer_ip" javaType="java.lang.String" jdbcType="VARCHAR" property="peerIp"/>
+        <result column="peer_url" javaType="java.lang.String" jdbcType="VARCHAR" property="peerUrl"/>
+        <result column="block_number" javaType="java.math.BigInteger" jdbcType="INTEGER" property="blockNumber"/>
+        <result column="description" javaType="java.lang.String" jdbcType="VARCHAR" property="description"/>
+        <result column="create_time" javaType="java.time.LocalDateTime" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="modify_time" javaType="java.time.LocalDateTime" jdbcType="TIMESTAMP" property="modifyTime"/>
     </resultMap>
 
 
-    <sql id="ALL_SELECT_COLUMN">
-        peer_id,channel_id,peer_name,peer_address,block_number,description,create_time,modify_time
-    </sql>
-
     <insert id="add" parameterType="com.webank.fabric.node.manager.common.pojo.peer.PeerDO">
         insert ignore into tb_peer
-        (peer_name,channel_id,peer_name,peer_address,description,block_number,create_time,modify_time)
-        values(#{peerName},#{channelId},#{peerName},#{peerAddress},#{description},NOW(),NOW())
+        (peer_name,channel_id,peer_port,peer_ip,peer_url,description,block_number,create_time,modify_time)
+        values(#{peerName},#{channelId},#{peerPort},#{peerIp},#{peerUrl},#{description},#{blockNumber},NOW(),NOW())
     </insert>
 
 
@@ -40,8 +34,8 @@
         <if test="peerId != null and peerId != ''">
             and peer_id = #{peerId}
         </if>
-        <if test="peerAddress != null and peerAddress != ''">
-            and peer_address = #{peerAddress}
+        <if test="peerUrl != null and peerUrl != ''">
+            and peer_url = #{peerUrl}
         </if>
         <if test="peerName != null and peerName != ''">
             and peer_name = #{peerName}
@@ -57,8 +51,8 @@
         <if test="peerId != null and peerId != ''">
             and peer_id = #{peerId}
         </if>
-        <if test="peerAddress != null and peerAddress != ''">
-            and peer_address = #{peerAddress}
+        <if test="peerUrl != null and peerUrl != ''">
+            and peer_url = #{peerUrl}
         </if>
         <if test="peerName != null and peerName != ''">
             and peer_name = #{peerName}
@@ -78,6 +72,12 @@
 
     <update id="update" parameterType="com.webank.fabric.node.manager.common.pojo.peer.PeerDO">
         update tb_peer set modify_time=NOW()
+        <if test="peerIp != null">
+            ,peer_ip = #{peerIp}
+        </if>
+        <if test="peerPort != null">
+            ,peer_port = #{peerPort}
+        </if>
         <if test="blockNumber != null">
             ,block_number = #{blockNumber}
         </if>
@@ -96,13 +96,21 @@
         <if test="peerId != null and peerId != ''">
             and peer_id = #{peerId}
         </if>
-        <if test="peerAddress != null and peerAddress != ''">
-            and peer_address = #{peerAddress}
+        <if test="peerUrl != null and peerUrl != ''">
+            and peer_url = #{peerUrl}
         </if>
         <if test="peerName != null and peerName != ''">
             and peer_name = #{peerName}
         </if>
         limit 1
+    </select>
+
+    <select id="queryByIpAndPort" resultMap="peerMap">
+    select * from tb_peer where peer_ip = #{peerIp} and peer_port = #{peerPort}
+    </select>
+
+    <select id="queryByChannelIdAndPeerName" resultMap="peerMap">
+        select * from tb_peer where channel_id = #{channelId} and peer_name = #{peerName}
     </select>
 
     <delete id="deleteByPeerAndChannel">

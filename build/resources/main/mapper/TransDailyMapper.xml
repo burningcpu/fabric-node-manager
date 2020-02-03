@@ -1,36 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <!--对应mapper接口 -->
 <mapper namespace="com.webank.fabric.node.manager.api.transaction.TransDailyMapper">
-  <resultMap id="seventDayOfTransMap" type="com.webank.fabric.node.manager.common.pojo.transaction.SeventDaysTrans">
-    <id column="channel_id" javaType="java.lang.Integer" jdbcType="INTEGER" property="channelId"/>
-    <id column="trans_day" javaType="java.time.LocalDate" jdbcType="TIMESTAMP" property="day"/>
-    <result column="trans_count" javaType="java.lang.Integer" jdbcType="INTEGER"
-      property="transCount"/>
-  </resultMap>
+    <resultMap id="sevenDayOfTransMap" type="com.webank.fabric.node.manager.common.pojo.transaction.SevenDaysTrans">
+        <id column="channel_id" javaType="java.lang.Integer" jdbcType="INTEGER" property="channelId"/>
+        <id column="trans_day" javaType="java.time.LocalDate" jdbcType="TIMESTAMP" property="day"/>
+        <result column="trans_count" javaType="java.math.BigInteger" jdbcType="INTEGER"
+                property="transCount"/>
+    </resultMap>
 
-  <select id="listSeventDayOfTransDaily" resultMap="seventDayOfTransMap">
-		select channel_id,trans_day,trans_count from tb_trans_daily where channel_id = #{channelId} and trans_day &gt;= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-	</select>
+    <select id="listSevenDayOfTransDaily" resultMap="sevenDayOfTransMap">
+        select channel_id,trans_day,trans_count from tb_trans_daily where channel_id = #{channelId} and trans_day &gt;=
+        DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+    </select>
 
-  <update id="updateTransDaily">
-		update tb_trans_daily set trans_count=#{transCount},block_number=#{latestBlockNumber},modify_time=now()
-		where channel_id=#{channelId} and trans_day=#{transDay} and block_number=#{oldBlockNumber}
-	</update>
+    <update id="updateTransDaily">
+        update tb_trans_daily set trans_count=#{transCount},trans_number=#{latestTransNumber},modify_time=now()
+        where channel_id=#{channelId} and trans_day=#{transDay} and trans_number=#{oldTransNumber}
+    </update>
 
-  <insert id="addTransDailyRow" parameterType="com.webank.fabric.node.manager.common.pojo.transaction.TransDailyDO">
-		insert ignore into tb_trans_daily(channel_id,trans_day,trans_count,block_number,create_time,modify_time)
-		values(#{channelId},#{transDay},#{transCount},#{blockNumber},NOW(),NOW())
-	</insert>
+    <insert id="addTransDailyRow" parameterType="com.webank.fabric.node.manager.common.pojo.transaction.TransDailyDO">
+        REPLACE INTO  tb_trans_daily(channel_id,trans_day,trans_count,trans_number,create_time,modify_time)
+        values(#{channelId},#{transDay},#{transCount},#{transNumber},NOW(),NOW())
+    </insert>
 
-  <select id="queryMaxBlockByChannel" parameterType="java.lang.Integer"
-    resultType="java.math.BigInteger">
-		select max(block_number) from tb_trans_daily where channel_id = #{channelId}
-	</select>
+    <select id="queryMaxBlockByChannel" parameterType="java.lang.Integer"
+            resultType="java.math.BigInteger">
+        select max(block_number) from tb_trans_daily where channel_id = #{channelId}
+    </select>
 
-	<delete id="deleteByChannelId">
-		delete from tb_trans_daily where channel_id = #{channelId}
-	</delete>
+    <delete id="deleteByChannelId">
+        delete from tb_trans_daily where channel_id = #{channelId}
+    </delete>
 </mapper>

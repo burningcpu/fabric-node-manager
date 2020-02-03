@@ -5,8 +5,8 @@
 <!--对应mapper接口 -->
 <mapper namespace="com.webank.fabric.node.manager.api.transaction.TransactionMapper">
     <resultMap id="transHashMap" type="com.webank.fabric.node.manager.common.pojo.transaction.TransactionDO">
-        <id column="txId" javaType="java.lang.String" jdbcType="VARCHAR" property="txId"/>
-        <result column="creator" javaType="java.lang.String" jdbcType="VARCHAR" property="creator"/>
+        <id column="trans_number" javaType="java.math.BigInteger" jdbcType="INTEGER" property="transNumber"/>
+        <result column="txId" javaType="java.lang.String" jdbcType="VARCHAR" property="txId"/>
         <result column="action_count" javaType="java.lang.Integer" jdbcType="INTEGER" property="actionCount"/>
         <result column="block_number" javaType="java.math.BigInteger" jdbcType="INTEGER" property="blockNumber"/>
         <result column="envelope_type" javaType="java.lang.String" jdbcType="VARCHAR" property="envelopeType"/>
@@ -19,15 +19,15 @@
 
     <insert id="add">
         insert ignore into
-        ${tableName}(txId,block_number,creator,action_count,trans_timestamp,envelope_type,create_time,modify_time)
-        values(#{trans.txId},#{trans.blockNumber},#{trans.creator},#{trans.actionCount},#{trans.transTimestamp},#{trans.envelopeType},NOW(),NOW())
+        ${tableName}(txId,block_number,action_count,trans_timestamp,envelope_type,create_time,modify_time)
+        values(#{trans.txId},#{trans.blockNumber},#{trans.actionCount},#{trans.transTimestamp},#{trans.envelopeType},NOW(),NOW())
     </insert>
 
 
     <select id="getCount" parameterType="com.webank.fabric.node.manager.common.pojo.transaction.TransListParam"
             resultType="java.lang.Integer">
         select count(txId) from ${tableName} where 1=1
-        <if test="param.transHash != null and param.transHash != ''">
+        <if test="param.txId != null and param.txId != ''">
             and txId = #{param.txId}
         </if>
         <if test="param.blockNumber != null">
@@ -42,14 +42,18 @@
     <select id="getList" parameterType="com.webank.fabric.node.manager.common.pojo.transaction.TransListParam"
             resultMap="transHashMap">
         select * from ${tableName} where 1=1
+
+        <if test="param.minTransNumber != null and param.minTransNumber != ''">
+            and trans_number > #{param.minTransNumber}
+        </if>
         <if test="param.txId != null and param.txId != ''">
             and txId = #{param.txId}
         </if>
         <if test="param.blockNumber != null">
             and block_number = #{param.blockNumber}
         </if>
-        <if test="param.flagSortedByBlock != null and param.flagSortedByBlock != ''">
-            order by block_number ${param.flagSortedByBlock}
+        <if test="param.flagSortedByTransNumber != null and param.flagSortedByTransNumber != ''">
+            order by trans_number ${param.flagSortedByTransNumber}
         </if>
         <if test="param.start != null and param.pageSize != null">
             limit #{param.start},#{param.pageSize}
@@ -63,10 +67,20 @@
     </select>
 
     <delete id="remove">
-        DELETE from ${tableName}
-        where  block_number &lt;= (select max(block_number) blockNumber from tb_trans_daily where channel_id = #{channelId})
-        order by block_number
-        limit ${subTransNum}
+        delete t from ${tableName} as t,(select max(trans_number) maxTransNumber,min(trans_number) minTransNumber from
+        ${tableName}) t1
+        where t.trans_number &lt;= (select max(trans_number) from tb_trans_daily where channel_id = #{channelId})
+        and t.trans_number &lt;= t1.maxTransNumber - ${transRetainMax}
+        and t.trans_number &lt;= t1.minTransNumber + 1000
     </delete>
 
+
+    <select id="queryLatestTransCount"
+            resultType="com.webank.fabric.node.manager.common.pojo.transaction.LatestTransCountBO">
+        select max(trans_number) transNumber,count(trans_number) transCount,DATE(trans_timestamp) transDay
+        from ${tableName}
+        where trans_number &gt; (select IFNULL(max(trans_number),0) from tb_trans_daily where channel_id = #{channelId})
+        GROUP BY DATE(trans_timestamp)
+        ORDER BY trans_timestamp ASC
+    </select>
 </mapper>

@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.webank.fabric.node.manager.accessory.tablecreate.TableCreateMapper">
+<mapper namespace="com.webank.fabric.node.manager.tablecreate.TableCreateMapper">
 
   <select id="queryTables" resultType="java.lang.String">
     select table_name from information_schema.tables where table_schema=#{dbName}
@@ -29,16 +29,16 @@
 
   <update id="createTransHash" parameterType="java.lang.String">
       CREATE TABLE IF NOT EXISTS ${tableName} (
-      trans_id varchar(128) NOT NULL COMMENT 'txId',
+      trans_number bigint(25) NOT NULL AUTO_INCREMENT COMMENT '自增编号',
+      txId varchar(128) NOT NULL COMMENT 'txId',
       block_number bigint(25) NOT NULL COMMENT '所属区块',
-      creator varchar(60) DEFAULT NULL COMMENT 'creator(截取实际内容的前60位)',
       action_count int(11) DEFAULT NULL COMMENT '事件数（即：transactionActionInfo）',
       trans_timestamp datetime NOT NULL COMMENT '交易发生时间',
       envelope_type varchar(25) NOT NULL COMMENT '交易类型（TRANSACTION_ENVELOPE,ENVELOPE）',
       create_time datetime DEFAULT NULL COMMENT '创建时间',
       modify_time datetime DEFAULT NULL COMMENT '修改时间',
-      PRIMARY KEY (trans_hash),
-      KEY index_flag (statistics_flag)
+      PRIMARY KEY (trans_number),
+      unique  unique_txId (txId)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='交易信息表';
   </update>
 

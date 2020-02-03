@@ -24,14 +24,14 @@
         <result column="channel_id" javaType="java.lang.Integer" jdbcType="INTEGER"
                 property="channelId"/>
         <result column="maxDay" javaType="java.time.LocalDate" jdbcType="TIMESTAMP" property="maxDay"/>
-        <result column="block_number" javaType="java.math.BigInteger" jdbcType="INTEGER"
-                property="blockNumber"/>
+        <result column="trans_number" javaType="java.math.BigInteger" jdbcType="INTEGER"
+                property="transNumber"/>
         <result column="trans_count" javaType="java.math.BigInteger" jdbcType="INTEGER"
                 property="transCount"/>
     </resultMap>
 
 
-    <insert id="save" parameterType="com.webank.fabric.node.manager.common.pojo.channel.ChannelDO">
+    <insert id="add" parameterType="com.webank.fabric.node.manager.common.pojo.channel.ChannelDO">
         insert ignore into tb_channel (channel_name,peer_count,create_time,modify_time)
         values(#{channelName},#{peerCount},NOW(),NOW())
         <selectKey keyProperty="channelId" order="AFTER" resultType="java.lang.Integer">
@@ -39,13 +39,18 @@
         </selectKey>
     </insert>
 
+    <insert id="update" parameterType="com.webank.fabric.node.manager.common.pojo.channel.ChannelDO">
+        update tb_channel set channel_status = #{channelStatus},peer_count = #{peerCount},modify_time=NOW()
+        where channel_id=#{channelId}
+    </insert>
+
+    <select id="queryByChannelId" parameterType="java.lang.Integer" resultMap="channelMap">
+        select * from tb_channel where channel_id = #{channelId}
+    </select>
+
     <delete id="remove" parameterType="java.lang.Integer">
         delete from tb_channel where channel_id=#{channelId}
     </delete>
-
-    <update id="updateStatus">
-        update tb_channel set channel_status=#{channelStatus},modify_time=NOW() where channel_id=#{channelId}
-    </update>
 
     <select id="getCount" parameterType="java.lang.Integer" resultType="java.lang.Integer">
         select count(1) from tb_channel where 1 = 1
@@ -67,7 +72,7 @@
 
 
     <select id="queryLatestStatisticalTrans" resultMap="statisticalTransMap">
-        select a.channel_id,b.maxDay,c.block_number,c.trans_count from tb_channel a
+        select a.channel_id,b.maxDay,c.trans_number,c.trans_count from tb_channel a
         LEFT JOIN
         (select channel_id,max(trans_day) as maxDay from tb_trans_daily GROUP BY channel_id)b
         on (a.channel_id = b.channel_id)
@@ -76,11 +81,13 @@
     </select>
 
     <select id="getGeneral" resultType="com.webank.fabric.node.manager.common.pojo.channel.ChannelGeneral">
-        SELECT a.channel_id channelId,a.peer_count peerCount,b.transactionCount,b.latestBlock
+        SELECT a.channel_id channelId,a.peer_count peerCount,b.transactionCount,c.block_number latestBlock
         FROM tb_channel a
-        LEFT JOIN (select channel_id,sum(trans_count),block_number latestBlock transactionCount order by block_number
-        group by channel_id)b
+        LEFT JOIN (select channel_id,sum(trans_count) transactionCount,max(trans_number) maxTransNumber from
+        tb_trans_daily group by channel_id)b
         on a.channel_id=b.channel_id
+        LEFT JOIN ${transTableName} c
+        on b.maxTransNumber=c.trans_number
         where a.channel_id = #{channelId}
     </select>
 </mapper>

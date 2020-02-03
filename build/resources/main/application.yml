@@ -12,6 +12,12 @@ spring:
     username: "root"
     password: "123456"
 
+# spring security
+security:
+  isUseSecurity: true   # login's authorization
+  verificationCodeMaxAge: 300
+  authTokenMaxAge: 1800
+
 schedule:
   ###block info (pulling data from chain)
   pullBlockSleepTime: 200
@@ -30,19 +36,21 @@ schedule:
 #constants
 constant:
   ###http request
-  isUseSecurity: false   # login's authorization
-  verificationCodeMaxAge: 300
-  authTokenMaxAge: 1800
   ignoreCheckFront: /account/login,/account/pictureCheckCode,/login,/front/new,/front/find,/channel/generate,/channel/start
 
 
 
 #log config
 logging:
-  config: classpath:log4j2.xm
-  level:
-    com.webank.fabric.front: info
+  config: classpath:log4j2.xml
+  level.com.webank.fabric.node.manager: debug
 
 #front config
 front:
-  serverAddress: http://%1s:%2d/WeBASE-Front/%3s
+  serverAddress: http://%1s:%2d/Fabric-Front/%3s
+
+
+#mybatis config
+mybatis:
+  typeAliasesPackage: com.webank.fabric.node.manager
+  mapperLocations: classpath:mapper/*.xml
