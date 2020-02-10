@@ -34,6 +34,28 @@
 
 
     -- ----------------------------
+    -- Table structure for tb_chain_code
+    -- ----------------------------
+    CREATE TABLE IF NOT EXISTS tb_chain_code (
+      chain_code_pk int(11) NOT NULL AUTO_INCREMENT COMMENT '链码自增编号',
+      channel_id int(11) NOT NULL COMMENT '所属通道编号',
+      chain_code_lang varchar(64) DEFAULT "GO" COMMENT '链码语言（JAVA、GO）',
+      chain_code_name varchar(120) NOT NULL COMMENT '链码名称',
+      chain_code_version varchar(120) DEFAULT NULL COMMENT '链码版本',
+      chain_code_source text COMMENT '合约源码',
+      chain_code_id varchar(64) DEFAULT NULL COMMENT '合约编号',
+      deploy_time datetime DEFAULT NULL COMMENT '部署时间',
+      chain_code_status int(1) DEFAULT '1' COMMENT '部署状态（1：未部署，2：部署成功，3：部署失败）',
+      description text COMMENT '描述',
+      create_time datetime DEFAULT NULL COMMENT '创建时间',
+      modify_time datetime DEFAULT NULL COMMENT '修改时间',
+      PRIMARY KEY (chain_code_pk),
+      unique  unique_name_version (channel_id,chain_code_name,chain_code_version),
+      unique  unique_id (channel_id,chain_code_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='链码表';
+
+
+    -- ----------------------------
     -- Table structure for tb_front
     -- ----------------------------
     CREATE TABLE IF NOT EXISTS tb_front (

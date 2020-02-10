@@ -21,6 +21,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -70,8 +71,18 @@ public class ExceptionsHandler {
         RetCode RetCode = new RetCode(ConstantCode.PARAM_EXCEPTION.getCode(), message);
         BaseResponse bre = new BaseResponse(RetCode);
         return bre;
-
     }
+
+    @ResponseBody
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public BaseResponse validExceptionHandler(HttpMessageNotReadableException e) {
+        String message = "these fields can not be match:" + e.getMessage();
+        RetCode RetCode = new RetCode(ConstantCode.PARAM_EXCEPTION.getCode(), message);
+        BaseResponse bre = new BaseResponse(RetCode);
+        return bre;
+    }
+
 
     /**
      * parameter exception:TypeMismatchException

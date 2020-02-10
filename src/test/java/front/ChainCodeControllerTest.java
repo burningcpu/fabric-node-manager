@@ -11,7 +11,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-public class FrontControllerTest extends BaseControllerTest {
+public class ChainCodeControllerTest extends BaseControllerTest {
 
     @Test
     public void newFrontTest() throws Exception {

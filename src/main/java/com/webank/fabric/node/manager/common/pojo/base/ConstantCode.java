@@ -74,6 +74,17 @@ public class ConstantCode {
 
     public static final RetCode PASSWORD_ERROR = RetCode.mark(204019, "password error");
 
+    public static final RetCode CHAIN_CODE_EXISTS = RetCode.mark(204020, "chainCode already exists");
+
+    public static final RetCode CHAIN_CODE_HAS_BEAN_DEPLOYED = RetCode.mark(204021, "chainCode has been deployed");
+
+    public static final RetCode CHAIN_CODE_NAME_REPEAT = RetCode.mark(204022, "chainCode name cannot be repeated");
+
+    public static final RetCode INVALID_CHAIN_CODE_NO = RetCode.mark(204023, "invalid chainCodePk id");
+
+    public static final RetCode CHAIN_CODE_HAS_NOT_DEPLOYED = RetCode.mark(204024, "chainCode has not deployed");
+
+    public static final RetCode CHAIN_CODE_DEPLOY_FAIL = RetCode.mark(204025, "chainCode deploy fail");
 
     /* auth */
     public static final RetCode USER_NOT_LOGGED_IN = RetCode.mark(304000, "user not logged in");

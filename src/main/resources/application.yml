@@ -14,7 +14,7 @@ spring:
 
 # spring security
 security:
-  isUseSecurity: true   # login's authorization
+  isUseSecurity: false   # login's authorization
   verificationCodeMaxAge: 300
   authTokenMaxAge: 1800
 

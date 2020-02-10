@@ -8,6 +8,7 @@ import com.webank.fabric.node.manager.common.exception.NodeMgrException;
 import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
 import com.webank.fabric.node.manager.common.pojo.channel.FrontChannelUnionDO;
 import com.webank.fabric.node.manager.common.pojo.front.FrontProperties;
+import com.webank.fabric.node.manager.common.pojo.front.TransactionParam;
 import com.webank.fabric.node.manager.common.pojo.peer.PeerDTO;
 import com.webank.fabric.node.manager.common.utils.BeanUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +43,9 @@ public class FrontRestManager {
     public static final String URI_BLOCK_BY_TRANSACTION_ID = "sdk/blockInfo/%1s";
     public static final String URI_GET_TRANSACTION_BY_ID = "sdk/transactionInfo/%1s";
     public static final String URI_GET_CHAIN_CODE_NAME_LIST = "sdk/chainCodeNameList";
+    public static final String URI_CHAIN_CODE_DEPLOY = "chainCode/deploy";
+    public static final String URI_SEND_TRANSACTION = "transaction/send";
+
     @Autowired
     private RestTemplate restTemplate;
     @Autowired
@@ -172,6 +176,21 @@ public class FrontRestManager {
 
         Common.Block block = Common.Block.parseFrom(blockByteArray);
         return BeanUtils.getInstanceByReflection(BlockInfo.class, Arrays.asList(block));
+    }
+
+
+    /**
+     * deploy chainCode.
+     */
+    public String deployChainCode(int channelId, Map<String, Object> params) {
+        return postForEntity(channelId, URI_CHAIN_CODE_DEPLOY, params, String.class);
+    }
+
+    /**
+     * send transaction.
+     */
+    public Object sendTransaction(int channelId, TransactionParam transParam) {
+        return postForEntity(channelId, URI_SEND_TRANSACTION, transParam, Object.class);
     }
 
 

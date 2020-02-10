@@ -52,7 +52,7 @@ public class ChannelService {
      * update peer count.
      */
     public ChannelDO updatePeerCount(int channelId, int peerCount) {
-        ChannelDO channelDO = channelMapper.queryByChannelId(channelId);
+        ChannelDO channelDO = channelMapper.queryByChannelId(channelId); 
         if (channelDO == null) {
             log.error("update updatePeerCount fail:invalid channelId[{}]", channelId);
             throw new NodeMgrException(ConstantCode.SAVE_CHANNEL_FAIL);
@@ -60,6 +60,13 @@ public class ChannelService {
         channelDO.setPeerCount(peerCount);
         channelMapper.update(channelDO);
         return channelDO;
+    }
+
+    /**
+     * query by channelId
+     */
+    public ChannelDO queryByChannelId(int channelId) {
+        return channelMapper.queryByChannelId(channelId);
     }
 
     /**
