@@ -15,7 +15,7 @@ public interface ChainCodeMapper {
 
     Integer add(ChainCodeDO chainCodeDO);
 
-    Integer remove(@Param("contractId") Integer contractId);
+    Integer remove(@Param("chainCodePk") Integer chainCodePk);
 
     Integer update(ChainCodeDO chainCodeDO);
 
