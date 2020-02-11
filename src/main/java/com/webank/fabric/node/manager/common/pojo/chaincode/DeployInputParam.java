@@ -36,6 +36,7 @@ public class DeployInputParam {
     private String chainCodeVersion;
     @NotBlank
     private String chainCodeSource;
+    private String chainCodeLang;
     private List<Object> initParams;
 }
 

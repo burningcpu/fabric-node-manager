@@ -149,6 +149,7 @@ public class ChainCodeService {
         Map<String, Object> params = new HashMap<>();
         params.put("channelName", channelId);
         params.put("chainCodeName", inputParam.getChainCodeName());
+        params.put("chainCodeLang", inputParam.getChainCodeLang());
         params.put("chainCodeSource", inputParam.getChainCodeSource());
         params.put("version", inputParam.getChainCodeVersion());
         params.put("initParams", inputParam.getInitParams());

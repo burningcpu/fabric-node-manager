@@ -37,7 +37,7 @@
 
     <update id="update" parameterType="com.webank.fabric.node.manager.common.pojo.chaincode.ChainCodeDO">
         update tb_chain_code set modify_time = now()
-        <if test="chain_codeSource != null and chain_codeSource != ''">
+        <if test="chainCodeSource != null and chainCodeSource != ''">
             ,chain_code_source = #{chainCodeSource}
         </if>
         <if test="chainCodeId != null and chainCodeId != ''">

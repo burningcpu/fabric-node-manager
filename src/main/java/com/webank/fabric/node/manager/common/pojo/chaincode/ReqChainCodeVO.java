@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hyperledger.fabric.sdk.TransactionRequest;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -19,7 +20,7 @@ public class ReqChainCodeVO {
     private Integer chainCodePk;
     @NotNull
     private Integer channelId;
-    private String chainCodeLang;
+    private String chainCodeLang = TransactionRequest.Type.GO_LANG.toString();
     @NotBlank
     private String chainCodeName;
     @NotBlank

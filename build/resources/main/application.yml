@@ -1,6 +1,6 @@
 #server config
 server:
-  port: 6002
+  port: 8080
   servlet:
     context-path: /Fabric-Node-Manager
 
@@ -14,7 +14,7 @@ spring:
 
 # spring security
 security:
-  isUseSecurity: true   # login's authorization
+  isUseSecurity: false   # login's authorization
   verificationCodeMaxAge: 300
   authTokenMaxAge: 1800
 
