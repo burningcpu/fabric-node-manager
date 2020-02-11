@@ -20,6 +20,7 @@ public class ReqChainCodeVO {
     private Integer chainCodePk;
     @NotNull
     private Integer channelId;
+    @Builder.Default
     private String chainCodeLang = TransactionRequest.Type.GO_LANG.toString();
     @NotBlank
     private String chainCodeName;

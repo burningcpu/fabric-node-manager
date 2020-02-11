@@ -1,11 +1,13 @@
 package com.webank.fabric.node.manager.api.chaincode;
 
 import com.alibaba.fastjson.JSON;
+import com.webank.fabric.node.manager.api.channel.ChannelService;
 import com.webank.fabric.node.manager.api.front.FrontRestManager;
 import com.webank.fabric.node.manager.common.enums.ChainCodeStatus;
 import com.webank.fabric.node.manager.common.exception.NodeMgrException;
 import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
 import com.webank.fabric.node.manager.common.pojo.chaincode.*;
+import com.webank.fabric.node.manager.common.pojo.channel.ChannelDO;
 import com.webank.fabric.node.manager.common.pojo.front.TransactionParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -28,6 +30,8 @@ public class ChainCodeService {
     private ChainCodeMapper contractMapper;
     @Autowired
     private FrontRestManager frontRestManager;
+    @Autowired
+    private ChannelService channelService;
 
     /**
      * add new chainCode data.
@@ -111,7 +115,7 @@ public class ChainCodeService {
             return contractMapper.countOfChainCode(param);
         } catch (RuntimeException ex) {
             log.error("fail countOfChainCode", ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new NodeMgrException(ConstantCode.DB_EXCEPTION,ex);
         }
     }
 
@@ -127,7 +131,7 @@ public class ChainCodeService {
             return contractRow;
         } catch (RuntimeException ex) {
             log.error("fail countOfChainCode", ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new NodeMgrException(ConstantCode.DB_EXCEPTION,ex);
         }
 
     }
@@ -141,13 +145,14 @@ public class ChainCodeService {
         int channelId = inputParam.getChannelId();
         //check chainCode
         verifyChainCodePktDeploy(inputParam.getChainCodePk(), channelId);
-        //check contractName
+        //check chainCodeName
         verifyChainCodeNameNotExist(inputParam.getChannelId(), inputParam.getChainCodeVersion(),
                 inputParam.getChainCodeName(), inputParam.getChainCodePk());
 
+        ChannelDO channelDo = channelService.queryByChannelId(channelId);
         // deploy param
         Map<String, Object> params = new HashMap<>();
-        params.put("channelName", channelId);
+        params.put("channelName", channelDo.getChannelName());
         params.put("chainCodeName", inputParam.getChainCodeName());
         params.put("chainCodeLang", inputParam.getChainCodeLang());
         params.put("chainCodeSource", inputParam.getChainCodeSource());

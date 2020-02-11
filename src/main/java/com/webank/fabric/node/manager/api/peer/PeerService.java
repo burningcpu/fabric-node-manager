@@ -77,7 +77,7 @@ public class PeerService {
             return nodeCount;
         } catch (RuntimeException ex) {
             log.error("fail countOfPeer . queryParam:{}", queryParam, ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new NodeMgrException(ConstantCode.DB_EXCEPTION,ex);
         }
     }
 
@@ -138,7 +138,7 @@ public class PeerService {
             return nodeRow;
         } catch (RuntimeException ex) {
             log.error("fail queryPeer . nodeId:{}", nodeId, ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new NodeMgrException(ConstantCode.DB_EXCEPTION,ex);
         }
     }
 
@@ -154,7 +154,7 @@ public class PeerService {
             affectRow = peerMapper.update(tbPeer);
         } catch (RuntimeException ex) {
             log.error("updatePeerInfo exception", ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new NodeMgrException(ConstantCode.DB_EXCEPTION,ex);
         }
 
         if (affectRow == 0) {

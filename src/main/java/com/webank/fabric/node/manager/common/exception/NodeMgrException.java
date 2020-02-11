@@ -41,6 +41,11 @@ public class NodeMgrException extends RuntimeException {
         this.retCode = new RetCode(code, msg);
     }
 
+    public NodeMgrException(int code, String msg, Throwable cause) {
+        super(msg, cause);
+        this.retCode = new RetCode(code, msg);
+    }
+
     public RetCode getCodeAndMsg() {
         return retCode;
     }

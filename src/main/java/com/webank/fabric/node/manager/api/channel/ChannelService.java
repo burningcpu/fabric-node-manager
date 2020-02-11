@@ -80,7 +80,7 @@ public class ChannelService {
             return count;
         } catch (RuntimeException ex) {
             log.error("fail countOfChannel", ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new NodeMgrException(ConstantCode.DB_EXCEPTION,ex);
         }
     }
 

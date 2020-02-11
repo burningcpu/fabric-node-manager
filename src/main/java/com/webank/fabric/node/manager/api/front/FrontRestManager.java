@@ -5,12 +5,14 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.webank.fabric.node.manager.api.channel.FrontChannelService;
 import com.webank.fabric.node.manager.common.exception.NodeMgrException;
+import com.webank.fabric.node.manager.common.pojo.base.BaseResponse;
 import com.webank.fabric.node.manager.common.pojo.base.ConstantCode;
 import com.webank.fabric.node.manager.common.pojo.channel.FrontChannelUnionDO;
 import com.webank.fabric.node.manager.common.pojo.front.FrontProperties;
 import com.webank.fabric.node.manager.common.pojo.front.TransactionParam;
 import com.webank.fabric.node.manager.common.pojo.peer.PeerDTO;
 import com.webank.fabric.node.manager.common.utils.BeanUtils;
+import com.webank.fabric.node.manager.common.utils.NodeMgrUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.hyperledger.fabric.protos.common.Common;
@@ -210,16 +212,16 @@ public class FrontRestManager {
 
         try {
             HttpEntity entity = buildHttpEntity(param);// build entity
-            ResponseEntity<T> response = restTemplate.exchange(url, method, entity, clazz);
-            return response.getBody();
-        } catch (HttpStatusCodeException e) {
-            JSONObject error = JSONObject.parseObject(e.getResponseBodyAsString());
+            ResponseEntity<BaseResponse> response = restTemplate.exchange(url, method, entity, BaseResponse.class);
+            return parsingFrontResponse(response, clazz);
+        } catch (HttpStatusCodeException ex) {
+            JSONObject error = JSONObject.parseObject(ex.getResponseBodyAsString());
             log.error("http request fail. error:{}", JSON.toJSONString(error));
-            if (error.containsKey("code") && error.containsKey("errorMessage")) {
+            if (error.containsKey("code") && error.containsKey("message")) {
                 throw new NodeMgrException(error.getInteger("code"),
-                        error.getString("errorMessage"));
+                        error.getString("message"));
             }
-            throw new NodeMgrException(ConstantCode.REQUEST_FRONT_FAIL);
+            throw new NodeMgrException(ConstantCode.REQUEST_FRONT_FAIL,ex);
         }
     }
 
@@ -326,21 +328,33 @@ public class FrontRestManager {
                     log.error("fail restTemplateExchange, rest is null. channelId:{} uri:{}", channelId, uri);
                     throw new NodeMgrException(ConstantCode.SYSTEM_EXCEPTION);
                 }
-                ResponseEntity<T> response = restTemplate.exchange(url, method, entity, clazz);
-                return response.getBody();
+                ResponseEntity<BaseResponse> response = restTemplate.exchange(url, method, entity, BaseResponse.class);
+                return parsingFrontResponse(response, clazz);
             } catch (ResourceAccessException ex) {
                 log.warn("fail restTemplateExchange,try next front", ex);
                 continue;
-            } catch (HttpStatusCodeException e) {
-                JSONObject error = JSONObject.parseObject(e.getResponseBodyAsString());
+            } catch (HttpStatusCodeException ex) {
+                JSONObject error = JSONObject.parseObject(ex.getResponseBodyAsString());
                 log.error("http request fail. error:{}", JSON.toJSONString(error));
-                if (error.containsKey("code") && error.containsKey("errorMessage")) {
+                if (error.containsKey("code") && error.containsKey("message")) {
                     throw new NodeMgrException(error.getInteger("code"),
-                            error.getString("errorMessage"));
+                            error.getString("message"),ex);
                 }
-                throw new NodeMgrException(ConstantCode.REQUEST_FRONT_FAIL);
+                throw new NodeMgrException(ConstantCode.REQUEST_FRONT_FAIL,ex);
             }
         }
         return null;
+    }
+
+    /**
+     * parsing front response.
+     */
+    private <T> T parsingFrontResponse(ResponseEntity<BaseResponse> response, Class<T> clazz) {
+        BaseResponse baseResponse = response.getBody();
+        if (baseResponse.getCode() != 0) {
+            log.error("request front fail, response from front:{}", JSON.toJSONString(baseResponse));
+            throw new NodeMgrException(baseResponse.getCode(), baseResponse.getMessage());
+        }
+        return NodeMgrUtils.object2JavaBean(baseResponse.getData(), clazz);
     }
 }

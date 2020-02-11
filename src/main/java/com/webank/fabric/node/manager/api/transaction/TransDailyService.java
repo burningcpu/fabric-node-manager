@@ -87,7 +87,7 @@ public class TransDailyService {
                     "fail updateTransDaily channelId:{} transDay:{} oldTransNumber:{}"
                             + " latestTransNumber:{} transCount:{}",
                     channelId, transDay, oldTransNumber, latestTransNumber, transCount, ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new NodeMgrException(ConstantCode.DB_EXCEPTION,ex);
         }
 
         log.debug("end updateTransDaily affectRow:{}", affectRow);

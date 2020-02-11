@@ -78,7 +78,7 @@ public class TransactionService {
             listOfTran = transactionMapper.getList(tableName, param);
         } catch (RuntimeException ex) {
             log.error("fail queryBlockList. TransListParam:{} ", JSON.toJSONString(param), ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new NodeMgrException(ConstantCode.DB_EXCEPTION,ex);
         }
 
         log.debug("end queryBlockList. listOfTran:{}", JSON.toJSONString(listOfTran));
@@ -119,7 +119,7 @@ public class TransactionService {
             return listMinMaxBlock;
         } catch (RuntimeException ex) {
             log.error("fail queryMinMaxBlock", ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new NodeMgrException(ConstantCode.DB_EXCEPTION,ex);
         }
     }
 

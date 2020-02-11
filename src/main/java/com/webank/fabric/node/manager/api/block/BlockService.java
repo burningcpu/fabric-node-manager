@@ -209,7 +209,7 @@ public class BlockService {
             return count;
         } catch (RuntimeException ex) {
             log.error("fail countOfBlock channelId:{} pkHash:{}", channelId, pkHash, ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new NodeMgrException(ConstantCode.DB_EXCEPTION,ex);
         }
     }
 
@@ -270,7 +270,7 @@ public class BlockService {
             return count;
         } catch (RuntimeException ex) {
             log.error("fail queryCountOfBlockByMinus groupId:{},exception:{}", groupId, ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new NodeMgrException(ConstantCode.DB_EXCEPTION,ex);
         }
     }
 

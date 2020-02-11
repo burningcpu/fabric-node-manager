@@ -41,7 +41,7 @@
             ,chain_code_source = #{chainCodeSource}
         </if>
         <if test="chainCodeId != null and chainCodeId != ''">
-            ,chain_code_pk = #{chainCodeId}
+            ,chain_code_id = #{chainCodeId}
         </if>
         <if test="chainCodeStatus != null and chainCodeStatus != ''">
             ,chain_code_status = #{chainCodeStatus}

@@ -27,6 +27,7 @@ import java.util.Random;
 public class NodeMgrUtils {
     private static final String TOKEN_HEADER_NAME = "Authorization";
     private static final String TOKEN_START = "Token";
+
     private static final char[] CHARS = {'2', '3', '4', '5', '6', '7', '8', '9', 'a',
             'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm', 'n', 'p', 'q', 'r', 's',
             't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J',
@@ -68,7 +69,7 @@ public class NodeMgrUtils {
             socket.connect(address, 1000);
         } catch (Exception ex) {
             log.error("fail checkServerConnect", ex);
-            throw new NodeMgrException(ConstantCode.SERVER_CONNECT_FAIL);
+            throw new NodeMgrException(ConstantCode.SERVER_CONNECT_FAIL, ex);
         } finally {
             if (Objects.nonNull(socket)) {
                 try {
@@ -88,6 +89,10 @@ public class NodeMgrUtils {
             log.warn("object2JavaBean. obj or clazz null");
             return null;
         }
+
+//        if (clazz == String.class) {
+//            return (T) obj;
+//        }
         String jsonStr = JSON.toJSONString(obj);
 
         return JSON.parseObject(jsonStr, clazz);
@@ -184,4 +189,6 @@ public class NodeMgrUtils {
         }
         return result;
     }
+
+
 }

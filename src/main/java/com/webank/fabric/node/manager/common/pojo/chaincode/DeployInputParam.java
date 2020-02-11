@@ -19,7 +19,6 @@ import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.List;
 
 /**
  * deploy chainCode info entity.
@@ -37,6 +36,6 @@ public class DeployInputParam {
     @NotBlank
     private String chainCodeSource;
     private String chainCodeLang;
-    private List<Object> initParams;
+    private String[] initParams;
 }
 

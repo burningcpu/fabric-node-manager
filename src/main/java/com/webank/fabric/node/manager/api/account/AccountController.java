@@ -75,9 +75,9 @@ public class AccountController {
             baseResponse.setData(tokenData);
             log.info("end getPictureCheckCode. baseResponse:{}", JSON.toJSONString(baseResponse));
             return baseResponse;
-        } catch (Exception e) {
-            log.error("fail getPictureCheckCode", e);
-            throw new NodeMgrException(ConstantCode.SYSTEM_EXCEPTION);
+        } catch (Exception ex) {
+            log.error("fail getPictureCheckCode", ex);
+            throw new NodeMgrException(ConstantCode.SYSTEM_EXCEPTION,ex);
         }
     }
 
