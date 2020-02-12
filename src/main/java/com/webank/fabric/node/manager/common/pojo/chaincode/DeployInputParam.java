@@ -34,7 +34,7 @@ public class DeployInputParam {
     @NotBlank
     private String chainCodeVersion;
     @NotBlank
-    private String chainCodeSource;
+    private String chainCodeSourceBase64;
     private String chainCodeLang;
     private String[] initParams;
 }

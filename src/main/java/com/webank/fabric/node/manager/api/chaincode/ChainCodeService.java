@@ -155,7 +155,7 @@ public class ChainCodeService {
         params.put("channelName", channelDo.getChannelName());
         params.put("chainCodeName", inputParam.getChainCodeName());
         params.put("chainCodeLang", inputParam.getChainCodeLang());
-        params.put("chainCodeSource", inputParam.getChainCodeSource());
+        params.put("chainCodeSourceBase64", inputParam.getChainCodeSourceBase64());
         params.put("version", inputParam.getChainCodeVersion());
         params.put("initParams", inputParam.getInitParams());
 

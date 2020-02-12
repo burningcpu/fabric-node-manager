@@ -10,7 +10,7 @@
         <result column="chain_code_lang" javaType="java.lang.String" jdbcType="VARCHAR" property="chainCodeLang"/>
         <result column="chain_code_version" javaType="java.lang.String" jdbcType="VARCHAR" property="chainCodeVersion"/>
         <result column="channel_id" javaType="java.lang.Integer" jdbcType="INTEGER" property="channelId"/>
-        <result column="chain_code_source" javaType="java.lang.String" jdbcType="VARCHAR" property="chainCodeSource"/>
+        <result column="chain_code_source_base64" javaType="java.lang.String" jdbcType="VARCHAR" property="chainCodeSourceBase64"/>
         <result column="chain_code_status" javaType="java.lang.Integer" jdbcType="INTEGER" property="chainCodeStatus"/>
         <result column="chain_code_id" javaType="java.lang.String" jdbcType="VARCHAR" property="chainCodeId"/>
         <result column="description" javaType="java.lang.String" jdbcType="VARCHAR" property="description"/>
@@ -22,8 +22,8 @@
 
     <insert id="add" parameterType="com.webank.fabric.node.manager.common.pojo.chaincode.ChainCodeDO">
         insert into
-        tb_chain_code(channel_id,chain_code_lang,chain_code_name,chain_code_version,chain_code_source,create_time,modify_time)
-        values(#{channelId},#{chainCodeLang},#{chainCodeName},#{chainCodeVersion},#{chainCodeSource},NOW(),NOW())
+        tb_chain_code(channel_id,chain_code_lang,chain_code_name,chain_code_version,chain_code_source_base64,create_time,modify_time)
+        values(#{channelId},#{chainCodeLang},#{chainCodeName},#{chainCodeVersion},#{chainCodeSourceBase64},NOW(),NOW())
         <selectKey keyProperty="chainCodePk" order="AFTER" resultType="java.lang.Integer">
             SELECT LAST_INSERT_ID()
         </selectKey>
@@ -37,8 +37,8 @@
 
     <update id="update" parameterType="com.webank.fabric.node.manager.common.pojo.chaincode.ChainCodeDO">
         update tb_chain_code set modify_time = now()
-        <if test="chainCodeSource != null and chainCodeSource != ''">
-            ,chain_code_source = #{chainCodeSource}
+        <if test="chainCodeSourceBase64 != null and chainCodeSourceBase64 != ''">
+            ,chain_code_source_base64 = #{chainCodeSourceBase64}
         </if>
         <if test="chainCodeId != null and chainCodeId != ''">
             ,chain_code_id = #{chainCodeId}

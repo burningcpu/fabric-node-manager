@@ -27,5 +27,5 @@ public class ReqChainCodeVO {
     @NotBlank
     private String chainCodeVersion;
     @NotNull
-    private String chainCodeSource;
+    private String chainCodeSourceBase64;
 }

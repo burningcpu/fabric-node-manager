@@ -21,7 +21,7 @@ public class RspChainCodeVO implements Serializable {
     private String chainCodeLang;
     private String chainCodeName;
     private String chainCodeVersion;
-    private String chainCodeSource;
+    private String chainCodeSourceBase64;
     private String chainCodeId;
     private LocalDateTime deployTime;
     private Integer chainCodeStatus;
