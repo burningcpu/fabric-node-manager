@@ -191,8 +191,8 @@ public class FrontRestManager {
     /**
      * send transaction.
      */
-    public Object sendTransaction(int channelId, TransactionParam transParam) {
-        return postForEntity(channelId, URI_SEND_TRANSACTION, transParam, Object.class);
+    public String sendTransaction(int channelId, TransactionParam transParam) {
+        return postForEntity(channelId, URI_SEND_TRANSACTION, transParam, String.class);
     }
 
 
