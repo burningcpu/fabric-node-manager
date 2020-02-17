@@ -21,11 +21,13 @@ import org.hyperledger.fabric.sdk.BlockInfo;
 import org.hyperledger.fabric.sdk.TransactionInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Resource;
 import java.math.BigInteger;
 import java.util.*;
 
@@ -47,18 +49,47 @@ public class FrontRestManager {
     public static final String URI_GET_CHAIN_CODE_NAME_LIST = "sdk/chainCodeNameList";
     public static final String URI_CHAIN_CODE_DEPLOY = "chainCode/deploy";
     public static final String URI_SEND_TRANSACTION = "transaction/send";
+    public static final String FRONT_PERFORMANCE_RATIO = "performance";
+    public static final String FRONT_PERFORMANCE_CONFIG = "performance/config";
 
-    @Autowired
-    private RestTemplate restTemplate;
+    @Resource
+    private RestTemplate httpClientTemplate;
     @Autowired
     private FrontProperties frontProperties;
     @Autowired
     private FrontChannelService frontChannelService;
+    @Autowired
+    private ClientHttpRequestFactory clientHttpRequestFactory;
 
 
 //------------------------------------------------------------------
 //------------------------public method-----------------------------
 //------------------------------------------------------------------
+
+
+    /**
+     * get performance from specific front.
+     */
+    public String getPerformanceRatio(String frontIp, Integer frontPort, String urlParam) {
+        // request url
+        String uri = FRONT_PERFORMANCE_RATIO + "?" + urlParam;
+        return getFromSpecificFront(frontIp, frontPort, uri, String.class);
+    }
+
+
+    /**
+     * get performance from specific front.
+     */
+    public String getPerformanceConfigFromSpecificFront(String frontIp, Integer frontPort) {
+        return getFromSpecificFront(frontIp, frontPort, URI_GET_CHANNEL_NAME, String.class);
+    }
+
+    /**
+     * get performance from specific front.
+     */
+    public String getPerformanceConfigSpecificFront(String frontIp, Integer frontPort) {
+        return getFromSpecificFront(frontIp, frontPort, FRONT_PERFORMANCE_CONFIG, String.class);
+    }
 
     /**
      * get channelName from specific front.
@@ -89,6 +120,17 @@ public class FrontRestManager {
     public BigInteger getChannelBlockNumberFromSpecificFront(String nodeIp, Integer frontPort, String peerUrl) {
         String uri = String.format(URI_GET_CHANNEL_BLOCK_NUMBER, peerUrl);
         return getFromSpecificFront(nodeIp, frontPort, uri, BigInteger.class);
+    }
+
+    /**
+     * get blockHeight of peer on chain.
+     */
+    public BigInteger getPeerBlockNumber(int channelId, String peerUrl) {
+        log.debug("start getPeerBlockNumber. channelId:{} peerUrl:{}", channelId, peerUrl);
+        String uri = String.format(URI_GET_PEER_BLOCK_NUMBER, peerUrl);
+        BigInteger latestBlockNumber = getForEntity(channelId, uri, BigInteger.class);
+        log.debug("end getLatestBlockNumber. latestBlockNumber:{}", latestBlockNumber);
+        return latestBlockNumber;
     }
 
 
@@ -188,6 +230,7 @@ public class FrontRestManager {
         return postForEntity(channelId, URI_CHAIN_CODE_DEPLOY, params, String.class);
     }
 
+
     /**
      * send transaction.
      */
@@ -212,7 +255,7 @@ public class FrontRestManager {
 
         try {
             HttpEntity entity = buildHttpEntity(param);// build entity
-            ResponseEntity<BaseResponse> response = restTemplate.exchange(url, method, entity, BaseResponse.class);
+            ResponseEntity<BaseResponse> response = httpClientTemplate.exchange(url, method, entity, BaseResponse.class);
             return parsingFrontResponse(response, clazz);
         } catch (HttpStatusCodeException ex) {
             JSONObject error = JSONObject.parseObject(ex.getResponseBodyAsString());
@@ -221,7 +264,7 @@ public class FrontRestManager {
                 throw new NodeMgrException(error.getInteger("code"),
                         error.getString("message"));
             }
-            throw new NodeMgrException(ConstantCode.REQUEST_FRONT_FAIL,ex);
+            throw new NodeMgrException(ConstantCode.REQUEST_FRONT_FAIL, ex);
         }
     }
 
@@ -236,6 +279,8 @@ public class FrontRestManager {
         log.debug("getFromSpecificFront. url:{}", url);
         return requestSpecificFront(frontIp, frontPort, HttpMethod.GET, uri, null, clazz);
     }
+
+
 
 
     /**
@@ -324,11 +369,11 @@ public class FrontRestManager {
             String url = buildFrontUrl(list, uri, method);//build url
             try {
                 HttpEntity entity = buildHttpEntity(param);// build entity
-                if (null == restTemplate) {
+                if (null == httpClientTemplate) {
                     log.error("fail restTemplateExchange, rest is null. channelId:{} uri:{}", channelId, uri);
                     throw new NodeMgrException(ConstantCode.SYSTEM_EXCEPTION);
                 }
-                ResponseEntity<BaseResponse> response = restTemplate.exchange(url, method, entity, BaseResponse.class);
+                ResponseEntity<BaseResponse> response = httpClientTemplate.exchange(url, method, entity, BaseResponse.class);
                 return parsingFrontResponse(response, clazz);
             } catch (ResourceAccessException ex) {
                 log.warn("fail restTemplateExchange,try next front", ex);
@@ -338,9 +383,9 @@ public class FrontRestManager {
                 log.error("http request fail. error:{}", JSON.toJSONString(error));
                 if (error.containsKey("code") && error.containsKey("message")) {
                     throw new NodeMgrException(error.getInteger("code"),
-                            error.getString("message"),ex);
+                            error.getString("message"), ex);
                 }
-                throw new NodeMgrException(ConstantCode.REQUEST_FRONT_FAIL,ex);
+                throw new NodeMgrException(ConstantCode.REQUEST_FRONT_FAIL, ex);
             }
         }
         return null;

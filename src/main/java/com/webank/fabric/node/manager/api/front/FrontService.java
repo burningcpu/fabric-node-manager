@@ -65,52 +65,30 @@ public class FrontService {
             throw new NodeMgrException(ConstantCode.SAVE_FRONT_FAIL);
         }
 
-        //Filter duplicate nodes
-        Map<String, PeerDTO> peerDtoMap = filterDuplicatePeers(peerList);
         //save channel
-        Integer channelId = queryChannelId(peerDtoMap);
+        Integer channelId = queryChannelId(peerList);
         ChannelDO channelDO;
         if (channelId == null) {
-            channelDO = channelService.addChannel(channel, peerDtoMap.size());
+            channelDO = channelService.addChannel(channel, peerList.size());
         } else {
-            channelDO = channelService.updatePeerCount(channelId, peerDtoMap.size());
+            channelDO = channelService.updatePeerCount(channelId, peerList.size());
         }
         frontChannelService.newFrontChannel(frontDo.getFrontId(), channelDO.getChannelId());
         //save peers
-        peerService.savePeerInfo(frontIp, frontPort, channelDO.getChannelId(), peerDtoMap);
+        peerService.savePeerInfo(frontIp, frontPort, channelDO.getChannelId(), peerList);
         //clear catch
         frontChannelService.clearMapList();
         return frontDo;
     }
 
 
-    /**
-     * Filter duplicate nodes
-     */
-    private Map<String, PeerDTO> filterDuplicatePeers(List<PeerDTO> peerList) {
-        Map<String, PeerDTO> peerDtoMap = new HashMap<>();
-        peerList.stream().forEach(p -> peerDtoMap.put(p.getPeerName(), NodeMgrUtils.object2JavaBean(p, PeerDTO.class)));
-        for (PeerDTO peerDTO : peerList) {
-            String peerName = peerDTO.getPeerName();
-            if (peerDtoMap.containsKey(peerName) && StringUtils.isNotBlank(peerDTO.getPeerIp())) {
-                peerDtoMap.put(peerName, peerDTO);
-            }
-        }
-        return peerDtoMap;
-    }
 
     /**
      * query channelId from databases.
      */
-    private Integer queryChannelId(Map<String, PeerDTO> peerDtoMap) {
-        Set<String> peerNameSet = peerDtoMap.keySet();
-        for (String peerName : peerNameSet) {
-            String peerIp = peerDtoMap.get(peerName).getPeerIp();
-            if (StringUtils.isBlank(peerIp))
-                continue;
-
-            int peerPort = peerDtoMap.get(peerName).getPeerPort();
-            PeerDO peerDO = peerService.queryByIpAndPort(peerIp, peerPort);
+    private Integer queryChannelId(List<PeerDTO> peerList) {
+        for (PeerDTO peerDTO : peerList) {
+            PeerDO peerDO = peerService.queryByIpAndPort(peerDTO.getPeerIp(), peerDTO.getPeerPort());
             if (peerDO != null) {
                 return peerDO.getChannelId();
             }
@@ -154,5 +132,15 @@ public class FrontService {
         //resetGroupListTask.asyncResetGroupList();
         //clear cache
         frontChannelService.clearMapList();
+    }
+
+    /**
+     * query front by frontId.
+     */
+    public FrontDO getById(int frontId) {
+        if (frontId == 0) {
+            return null;
+        }
+        return frontMapper.getById(frontId);
     }
 }

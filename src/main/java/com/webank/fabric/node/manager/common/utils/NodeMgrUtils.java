@@ -17,6 +17,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.security.MessageDigest;
+import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
@@ -190,5 +191,29 @@ public class NodeMgrUtils {
         return result;
     }
 
+    /**
+     * convert list to url param.
+     */
+    public static String convertUrlParam(List<String> nameList, List<Object> valueList) {
+        if (nameList == null || valueList == null || nameList.size() != valueList.size()) {
+            log.error("fail convertUrlParm. nameList or valuesList is error");
+            return "";
+        }
+        StringBuilder urlParamB = new StringBuilder("");
+        for (int i = 0; i < valueList.size(); i++) {
+            Object value = valueList.get(i);
+            if (value != null) {
+                urlParamB.append("&").append(nameList.get(i)).append("=").append(value);
+            }
+        }
 
+        if (urlParamB.length() == 0) {
+            log.info("fail convertUrlParam. urlParamB length is 0");
+            return "";
+        }
+
+        String urlParam = urlParamB.toString();
+        return urlParam.substring(1);
+
+    }
 }

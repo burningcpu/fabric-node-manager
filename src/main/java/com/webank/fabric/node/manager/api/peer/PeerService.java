@@ -15,8 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * service of peer.
@@ -34,10 +32,9 @@ public class PeerService {
     /**
      * save channel.
      */
-    public void savePeerInfo(String frontIp, Integer frontPort, int channelId, Map<String, PeerDTO> peerDtoMap) {
-        Set<String> peerNameSet = peerDtoMap.keySet();
-        for (String peerName : peerNameSet) {
-            PeerDTO peerDTO = peerDtoMap.get(peerName);
+    public void savePeerInfo(String frontIp, Integer frontPort, int channelId, List<PeerDTO> peerList) {
+
+        for (PeerDTO peerDTO : peerList) {
 
             //blockNumber of peer
             BigInteger blockNumber = null;
@@ -46,21 +43,18 @@ public class PeerService {
             }
 
             //Determine if peer is updated or new
-            PeerDO peerDO = queryByChannelIdAndPeerName(channelId, peerName);
+            PeerDO peerDO = queryByChannelIdAndPeerName(channelId, peerDTO.getPeerName());
             if (peerDO == null) {
                 //new
                 peerDO = new PeerDO();
                 BeanUtils.copyProperties(peerDTO, peerDO);
                 peerDO.setBlockNumber(blockNumber).setChannelId(channelId);
                 peerMapper.add(peerDO);
-            }else {
+            } else {
                 //update
                 peerDO.setBlockNumber(blockNumber).setPeerIp(peerDTO.getPeerIp()).setPeerPort(peerDTO.getPeerPort());
                 peerMapper.update(peerDO);
             }
-
-
-
         }
     }
 
@@ -77,7 +71,7 @@ public class PeerService {
             return nodeCount;
         } catch (RuntimeException ex) {
             log.error("fail countOfPeer . queryParam:{}", queryParam, ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION,ex);
+            throw new NodeMgrException(ConstantCode.DB_EXCEPTION, ex);
         }
     }
 
@@ -87,6 +81,9 @@ public class PeerService {
      */
     public List<PeerDO> qureyPeerList(PeerParam queryParam) throws NodeMgrException {
         log.debug("start qureyPeerList queryParam:{}", JSON.toJSONString(queryParam));
+
+        //sync peer blockNumber
+        syncPeerBlockNumber(queryParam.getChannelId());
 
         // query node list
         List<PeerDO> listOfPeer = peerMapper.getList(queryParam);
@@ -112,11 +109,11 @@ public class PeerService {
 
 
     /**
-     * query node by groupId
+     * query node by channelId
      */
-    public List<PeerDO> queryByChannelId(int groupId) {
+    public List<PeerDO> queryByChannelId(int channelId) {
         PeerParam nodeParam = new PeerParam();
-        nodeParam.setChannelId(groupId);
+        nodeParam.setChannelId(channelId);
         return qureyPeerList(nodeParam);
     }
 
@@ -138,7 +135,7 @@ public class PeerService {
             return nodeRow;
         } catch (RuntimeException ex) {
             log.error("fail queryPeer . nodeId:{}", nodeId, ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION,ex);
+            throw new NodeMgrException(ConstantCode.DB_EXCEPTION, ex);
         }
     }
 
@@ -154,7 +151,7 @@ public class PeerService {
             affectRow = peerMapper.update(tbPeer);
         } catch (RuntimeException ex) {
             log.error("updatePeerInfo exception", ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION,ex);
+            throw new NodeMgrException(ConstantCode.DB_EXCEPTION, ex);
         }
 
         if (affectRow == 0) {
@@ -177,36 +174,46 @@ public class PeerService {
     /**
      * delete by node and group.
      */
-    public void deleteByPeerAndChannelId(String nodeId, int groupId) throws NodeMgrException {
-        log.debug("start deleteByPeerAndChannelId nodeId:{} groupId:{}", nodeId, groupId);
-        peerMapper.deleteByPeerAndChannel(nodeId, groupId);
+    public void deleteByPeerAndChannelId(String nodeId, int channelId) throws NodeMgrException {
+        log.debug("start deleteByPeerAndChannelId nodeId:{} channelId:{}", nodeId, channelId);
+        peerMapper.deleteByPeerAndChannel(nodeId, channelId);
         log.debug("end deleteByPeerAndChannelId");
     }
 
     /**
-     * delete by groupId.
+     * delete by channelId.
      */
-    public void deleteByChannelId(int groupId) {
-        if (groupId == 0) {
+    public void deleteByChannelId(int channelId) {
+        if (channelId == 0) {
             return;
         }
-        peerMapper.deleteByChannelId(groupId);
+        peerMapper.deleteByChannelId(channelId);
     }
 
-
     /**
-     * get latest number of peer on chain.
+     * sync the actual block height of peer
      */
-//    private BigInteger getBlockNumberOfPeerOnChain(int groupId, String nodeId) {
-//        SyncStatus syncStatus = frontInterface.getSyncStatus(groupId);
-//        if (nodeId.equals(syncStatus.getPeerId())) {
-//            return syncStatus.getBlockNumber();
-//        }
-//        List<PeerOfSyncStatus> peerList = syncStatus.getPeers();
-//        BigInteger latestNumber = peerList.stream().filter(peer -> nodeId.equals(peer.getPeerId()))
-//                .map(s -> s.getBlockNumber()).findFirst().orElse(BigInteger.ZERO);//blockNumber
-//        return latestNumber;
-//    }
+    private void syncPeerBlockNumber(int channelId) {
+        PeerParam param = new PeerParam();
+        param.setChannelId(channelId);
+        List<PeerDO> peerLit = peerMapper.getList(param);
+        if (null == peerLit || peerLit.size() == 0) {
+            return;
+        }
+
+        for (PeerDO peerDO : peerLit) {
+            try {
+                BigInteger latestBlockNumber = frontRestManager.getPeerBlockNumber(channelId, peerDO.getPeerUrl());
+                peerDO.setBlockNumber(latestBlockNumber);
+                peerMapper.update(peerDO);
+            } catch (Exception ex) {
+                log.error("syncPeerBlockNumber exception", ex);
+                continue;
+            }
+        }
+
+
+    }
 
 
 }
