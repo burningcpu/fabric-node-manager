@@ -83,7 +83,7 @@ public class PerformanceService {
             throw new NodeMgrException(ConstantCode.INVALID_FRONT_ID);
         }
 
-        Object rspObj = frontRestManager.getPerformanceConfigSpecificFront(frontDO.getFrontIp(), frontDO.getFrontPort());
+        Object rspObj = frontRestManager.getPerformanceConfigFromSpecificFront(frontDO.getFrontIp(), frontDO.getFrontPort());
         log.debug("end getPerformanceConfig. frontRsp:{}", JSON.toJSONString(rspObj));
         return rspObj;
     }

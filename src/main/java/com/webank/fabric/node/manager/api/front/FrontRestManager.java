@@ -54,6 +54,8 @@ public class FrontRestManager {
 
     @Resource
     private RestTemplate httpClientTemplate;
+    @Resource
+    private RestTemplate deployRestTemplate;
     @Autowired
     private FrontProperties frontProperties;
     @Autowired
@@ -70,26 +72,20 @@ public class FrontRestManager {
     /**
      * get performance from specific front.
      */
-    public String getPerformanceRatio(String frontIp, Integer frontPort, String urlParam) {
+    public Object getPerformanceRatio(String frontIp, Integer frontPort, String urlParam) {
         // request url
         String uri = FRONT_PERFORMANCE_RATIO + "?" + urlParam;
-        return getFromSpecificFront(frontIp, frontPort, uri, String.class);
+        return getFromSpecificFront(frontIp, frontPort, uri, Object.class);
     }
 
 
     /**
      * get performance from specific front.
      */
-    public String getPerformanceConfigFromSpecificFront(String frontIp, Integer frontPort) {
-        return getFromSpecificFront(frontIp, frontPort, URI_GET_CHANNEL_NAME, String.class);
+    public Object getPerformanceConfigFromSpecificFront(String frontIp, Integer frontPort) {
+        return getFromSpecificFront(frontIp, frontPort, FRONT_PERFORMANCE_CONFIG, Object.class);
     }
 
-    /**
-     * get performance from specific front.
-     */
-    public String getPerformanceConfigSpecificFront(String frontIp, Integer frontPort) {
-        return getFromSpecificFront(frontIp, frontPort, FRONT_PERFORMANCE_CONFIG, String.class);
-    }
 
     /**
      * get channelName from specific front.
@@ -281,8 +277,6 @@ public class FrontRestManager {
     }
 
 
-
-
     /**
      * get from front for entity.
      */
@@ -352,6 +346,19 @@ public class FrontRestManager {
         return requestEntity;
     }
 
+    /**
+     * case restTemplate by uri.
+     */
+    private RestTemplate caseRestemplate(String uri) {
+        if (StringUtils.isBlank(uri)) {
+            return null;
+        }
+        if (uri.contains(URI_CHAIN_CODE_DEPLOY)) {
+            return deployRestTemplate;
+        }
+        return httpClientTemplate;
+    }
+
 
     /**
      * restTemplate exchange.
@@ -369,11 +376,13 @@ public class FrontRestManager {
             String url = buildFrontUrl(list, uri, method);//build url
             try {
                 HttpEntity entity = buildHttpEntity(param);// build entity
-                if (null == httpClientTemplate) {
+                RestTemplate restTemplate = caseRestemplate(uri);
+
+                if (null == restTemplate) {
                     log.error("fail restTemplateExchange, rest is null. channelId:{} uri:{}", channelId, uri);
                     throw new NodeMgrException(ConstantCode.SYSTEM_EXCEPTION);
                 }
-                ResponseEntity<BaseResponse> response = httpClientTemplate.exchange(url, method, entity, BaseResponse.class);
+                ResponseEntity<BaseResponse> response = restTemplate.exchange(url, method, entity, BaseResponse.class);
                 return parsingFrontResponse(response, clazz);
             } catch (ResourceAccessException ex) {
                 log.warn("fail restTemplateExchange,try next front", ex);
