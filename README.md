@@ -13,7 +13,7 @@ fabric-node-manager使用可配置管理多个front,也提供数据查询的rest
 ### 3.1. 拉取代码
 
 ```
-git clone https://github.com/dwusiq/fabric-node-manager.git
+git clone https://github.com/burningcpu/fabric-node-manager.git
 ```
 
 进入目录：
